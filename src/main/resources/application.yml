@@ -2,3 +2,5 @@ management:
   endpoint:
     health:
       show-details: always
+config:
+  request: ${DOC-WEB:*}
