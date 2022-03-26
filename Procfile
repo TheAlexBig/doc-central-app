@@ -1,1 +1,1 @@
-web: java -jar build/libs/doc-central-1.0.jar --server.port=$PORT
+web: java -jar target/doc-central-1.0.jar --server.port=$PORT
