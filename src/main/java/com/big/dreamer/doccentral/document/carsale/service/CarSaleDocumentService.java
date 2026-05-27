@@ -5,7 +5,7 @@ import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
-import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplates;
+import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
 import jakarta.annotation.PostConstruct;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -36,6 +36,11 @@ public class CarSaleDocumentService {
             new DocumentDetails("Propiedad", "", "PRECIO", "Municipio",
                     "Departamento", "FECHA", "HORA", "No", "No"),
             new LegalAgentDetails("Inicial", "Notario", "Departamento", "Municipio", "Masculino"));
+    private final CarSaleTemplateRepository templateRepository;
+
+    public CarSaleDocumentService(CarSaleTemplateRepository templateRepository) {
+        this.templateRepository = templateRepository;
+    }
 
     @PostConstruct
     void initializeDocumentWriter() {
@@ -43,12 +48,13 @@ public class CarSaleDocumentService {
     }
 
     public byte[] createDocument(CarSaleDocumentRequest request) {
+        CarSaleTemplateRepository.Templates templates = templateRepository.load();
         try (XWPFDocument document = new XWPFDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            createDeclarationSection(document, request);
+            createDeclarationSection(document, request, templates);
             createSignatures(document, request.buyer(), request.seller());
             createPageBreak(document);
-            createAuthenticSection(document, request);
+            createAuthenticSection(document, request, templates);
             createSignatures(document, request.buyer(), request.seller());
             document.write(output);
             return output.toByteArray();
@@ -57,35 +63,41 @@ public class CarSaleDocumentService {
         }
     }
 
-    private void createDeclarationSection(XWPFDocument document, CarSaleDocumentRequest request) {
+    private void createDeclarationSection(
+            XWPFDocument document,
+            CarSaleDocumentRequest request,
+            CarSaleTemplateRepository.Templates templates) {
         XWPFParagraph paragraph = justifiedParagraph(document);
         String people = populatePeople(
-                CarSaleTemplates.PEOPLE_DOCUMENT,
+                templates.peopleDocument(),
                 request.seller(),
                 sellerTitle(request.seller()),
                 request.buyer(),
                 buyerTitle(request.buyer()));
-        String car = populateCar(CarSaleTemplates.CAR_DOCUMENT, request.vehicle());
+        String car = populateCar(templates.carDocument(), request.vehicle());
         String documentTerms = populateDocument(
-                CarSaleTemplates.DOCUMENT + CarSaleTemplates.FIRST_SECTION_END,
+                templates.document() + templates.firstSectionEnd(),
                 request.document());
         paragraph.createRun().setText(people + car + documentTerms);
     }
 
-    private void createAuthenticSection(XWPFDocument document, CarSaleDocumentRequest request) {
+    private void createAuthenticSection(
+            XWPFDocument document,
+            CarSaleDocumentRequest request,
+            CarSaleTemplateRepository.Templates templates) {
         XWPFParagraph paragraph = justifiedParagraph(document);
-        String legalAgent = populateLegalAgent(CarSaleTemplates.LEGAL_AUTHENTIC, request.legalAgent(), request.document());
+        String legalAgent = populateLegalAgent(templates.legalAuthentic(), request.legalAgent(), request.document());
         String people = populatePeople(
-                CarSaleTemplates.PEOPLE_AUTHENTIC,
+                templates.peopleAuthentic(),
                 request.seller(),
                 sellerTitle(request.seller()),
                 request.buyer(),
                 buyerTitle(request.buyer()));
         people = replaceFirst(people, ":identifiesSeller", identificationText(request.document().identifiesSeller()));
         people = replaceFirst(people, ":identifiesBuyer", identificationText(request.document().identifiesBuyer()));
-        String car = populateCar(CarSaleTemplates.CAR_AUTHENTIC, request.vehicle());
+        String car = populateCar(templates.carAuthentic(), request.vehicle());
         String documentTerms = populateDocument(
-                CarSaleTemplates.DOCUMENT + CarSaleTemplates.SECOND_SECTION_END,
+                templates.document() + templates.secondSectionEnd(),
                 request.document());
         paragraph.createRun().setText(legalAgent + people + car + documentTerms);
     }

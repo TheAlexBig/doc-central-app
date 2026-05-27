@@ -5,16 +5,35 @@ import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
+import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
+import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CarSaleDocumentServiceTests {
 
-    private final CarSaleDocumentService service = new CarSaleDocumentService();
+    @TempDir
+    Path temporaryDirectory;
+
+    private CarSaleDocumentService service;
+
+    @BeforeEach
+    void setUp() {
+        ApplicationDirectories directories = new ApplicationDirectories(
+                temporaryDirectory.resolve("data").toString(),
+                temporaryDirectory.resolve("documents").toString());
+        directories.initialize();
+        CarSaleTemplateRepository templateRepository = new CarSaleTemplateRepository(directories);
+        templateRepository.initializeTemplates();
+        service = new CarSaleDocumentService(templateRepository);
+    }
 
     @Test
     void createsVehicleSaleDocumentWithBothSignaturesAndCorrectGenderTitles() throws Exception {

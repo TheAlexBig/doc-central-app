@@ -1,0 +1,5 @@
+server:
+  port: 17831
+app:
+  desktop:
+    enabled: true
