@@ -30,12 +30,12 @@ jobs:
 
     steps:
       - name: Check out desktop backend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: doc-central-app
 
       - name: Check out React frontend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: TheAlexBig/doc-central-forms
           ref: ${{ inputs.frontend_ref }}
