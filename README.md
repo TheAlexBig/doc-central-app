@@ -67,7 +67,14 @@ included Windows build workflow:
 ```
 
 It waits for the Windows runner and downloads the MSI artifact under
-`target/windows-installer/`.
+`target/windows-installer/<workflow-run-id>/`.
+
+Each MSI created by the GitHub workflow receives a GitHub artifact attestation.
+When the installed GitHub CLI supports `gh attestation`, the Linux helper
+verifies the downloaded MSI's build provenance automatically; otherwise it
+prints the command to run after upgrading `gh`. This proves the MSI came from
+this repository's workflow; it does not change Windows' `Unknown publisher`
+warning, which requires Authenticode code signing.
 
 To build directly on Windows, install a Java 21 JDK that supplies `jpackage`,
 Node.js/npm, and WiX Toolset. Place `doc-central-app` and `doc-central-forms`

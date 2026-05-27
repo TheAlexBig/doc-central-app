@@ -53,10 +53,31 @@ fi
 printf 'Waiting for workflow run %s...\n' "$run_id"
 gh run watch "$run_id" --repo "$repository" --exit-status
 
-mkdir -p "$output_directory"
+download_directory="$output_directory/$run_id"
+mkdir -p "$download_directory"
 gh run download "$run_id" \
   --repo "$repository" \
   --name "central-docs-windows-msi-$version" \
-  --dir "$output_directory"
+  --dir "$download_directory"
 
-printf 'Downloaded the Windows MSI artifact into %s\n' "$output_directory"
+shopt -s nullglob
+installers=("$download_directory"/*.msi)
+shopt -u nullglob
+if (( ${#installers[@]} == 0 )); then
+  printf 'No downloaded MSI was found in %s.\n' "$download_directory" >&2
+  exit 1
+fi
+
+if gh attestation verify --help >/dev/null 2>&1; then
+  for installer in "${installers[@]}"; do
+    printf 'Verifying GitHub build provenance for %s...\n' "$installer"
+    gh attestation verify "$installer" -R "$repository"
+  done
+else
+  printf 'This GitHub CLI version cannot verify artifact attestations. Upgrade gh, then run:\n' >&2
+  for installer in "${installers[@]}"; do
+    printf '  gh attestation verify %q -R %q\n' "$installer" "$repository" >&2
+  done
+fi
+
+printf 'Downloaded the Windows MSI artifact into %s\n' "$download_directory"

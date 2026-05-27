@@ -15,9 +15,11 @@ GitHub branches, run this on Linux:
 ./packaging/windows/build-from-linux.sh 1.0.0 main master
 ```
 
-Arguments are `version`, `frontend ref`, and `backend ref`. The script uses the
-GitHub CLI to dispatch the Windows build, wait for it, and download the MSI to
-`target/windows-installer/`. Authenticate once before using it:
+Arguments are `version`, `frontend ref`, and `backend ref`. The script uses
+the GitHub CLI to dispatch the Windows build, wait for it, download the MSI to
+`target/windows-installer/<workflow-run-id>/`, and verify its GitHub artifact
+attestation when the installed GitHub CLI supports `gh attestation`.
+Authenticate once before using it:
 
 ```bash
 gh auth login --hostname github.com
@@ -25,6 +27,27 @@ gh auth login --hostname github.com
 
 The default remote repositories are `TheAlexBig/doc-central-app` and
 `TheAlexBig/doc-central-forms`; both are checked out by the Windows workflow.
+
+## Build Provenance
+
+The GitHub Windows workflow generates a signed artifact attestation for each
+MSI using `actions/attest`. Because this repository is public, GitHub uses
+Sigstore's public-good service, allowing users to verify that an installer was
+built by this repository's workflow and was not modified afterward.
+
+The Linux build helper verifies the downloaded installer automatically when a
+recent GitHub CLI with the `attestation` command is installed; otherwise it
+prints the verification command after downloading the MSI. An installer can
+also be verified directly:
+
+```bash
+gh attestation verify path/to/CentralDocs-1.0.0.msi \
+  --repo TheAlexBig/doc-central-app
+```
+
+Artifact attestations establish build provenance; they do not Authenticode
+sign the MSI or set a Windows publisher identity. Windows can therefore still
+display `Unknown publisher` when an attested MSI is launched.
 
 ## Build On Windows
 

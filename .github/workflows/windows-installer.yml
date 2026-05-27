@@ -20,9 +20,10 @@ on:
         required: false
         default: manual
         type: string
-
 permissions:
   contents: read
+  id-token: write
+  attestations: write
 
 jobs:
   package-msi:
@@ -74,6 +75,11 @@ jobs:
           .\doc-central-app\packaging\windows\build-installer.ps1 `
             -Version $env:INSTALLER_VERSION `
             -FrontendDirectory (Resolve-Path '.\doc-central-forms').Path
+
+      - name: Attest Windows installer provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ github.workspace }}\doc-central-app\target\installer\*.msi
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
