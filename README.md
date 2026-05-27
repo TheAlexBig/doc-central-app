@@ -57,9 +57,21 @@ changing the document output directory.
 
 ## Windows Installer
 
-Build on Windows with a Java 21 JDK that supplies `jpackage`, Node.js/npm, and
-WiX Toolset available on `PATH`. Place `doc-central-app` and
-`doc-central-forms` beside one another, then run from this repository:
+Oracle `jpackage` builds native packages only on their target platform, so a
+Windows MSI cannot be generated directly by Linux `jpackage`. From Linux,
+push backend and frontend branches, authenticate `gh`, and dispatch the
+included Windows build workflow:
+
+```bash
+./packaging/windows/build-from-linux.sh 1.0.0 main master
+```
+
+It waits for the Windows runner and downloads the MSI artifact under
+`target/windows-installer/`.
+
+To build directly on Windows, install a Java 21 JDK that supplies `jpackage`,
+Node.js/npm, and WiX Toolset. Place `doc-central-app` and `doc-central-forms`
+beside one another, then run from this repository:
 
 ```powershell
 .\packaging\windows\build-installer.ps1 -Version 1.0.0
@@ -72,3 +84,7 @@ entry, stable upgrade identity, normal Windows upgrade behavior, and uninstall
 support.
 Increment the installer version for upgrades and keep the Maven project
 version aligned for published application releases.
+
+See Oracle's Java 21 `jpackage` documentation for the platform-specific native
+packaging restriction:
+https://docs.oracle.com/en/java/javase/21/docs/specs/man/jpackage.html

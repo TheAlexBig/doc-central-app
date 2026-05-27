@@ -1,0 +1,83 @@
+name: Build Windows Installer
+
+run-name: Central Docs Windows installer v${{ inputs.version }} with frontend ${{ inputs.frontend_ref }} (${{ inputs.request_id }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: MSI application version
+        required: true
+        default: 1.0.0
+        type: string
+      frontend_ref:
+        description: Branch, tag, or commit from doc-central-forms
+        required: true
+        default: main
+        type: string
+      request_id:
+        description: Correlation ID used by Linux downloads
+        required: false
+        default: manual
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package-msi:
+    runs-on: windows-2022
+
+    steps:
+      - name: Check out desktop backend
+        uses: actions/checkout@v4
+        with:
+          path: doc-central-app
+
+      - name: Check out React frontend
+        uses: actions/checkout@v4
+        with:
+          repository: TheAlexBig/doc-central-forms
+          ref: ${{ inputs.frontend_ref }}
+          path: doc-central-forms
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: doc-central-forms/package-lock.json
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          cache-dependency-path: doc-central-app/pom.xml
+
+      - name: Ensure WiX Toolset is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Command candle.exe -ErrorAction SilentlyContinue)) {
+            choco install wixtoolset --yes --no-progress
+            $wixBin = Get-ChildItem "${env:ProgramFiles(x86)}\WiX Toolset v*\bin" |
+              Select-Object -Last 1 -ExpandProperty FullName
+            $wixBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          }
+
+      - name: Build MSI with jpackage
+        shell: pwsh
+        env:
+          INSTALLER_VERSION: ${{ inputs.version }}
+        run: |
+          .\doc-central-app\packaging\windows\build-installer.ps1 `
+            -Version $env:INSTALLER_VERSION `
+            -FrontendDirectory (Resolve-Path '.\doc-central-forms').Path
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: central-docs-windows-msi-${{ inputs.version }}
+          path: doc-central-app/target/installer/*.msi
+          if-no-files-found: error
