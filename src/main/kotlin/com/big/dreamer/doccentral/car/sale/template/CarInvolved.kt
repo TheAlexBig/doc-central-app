@@ -1,6 +1,0 @@
-package com.big.dreamer.doccentral.car.sale.template
-
-object CarInvolved {
-    const val template = "OTORGAMOS: I) Que el primero de los comparecientes es dueño y actual poseedor de un vehículo automotor usado, de las siguientes características: PLACAS: :licensePlate; MARCA: :brand; MODELO: :model; COLOR: :color; AÑO: :factoryYear; CAPACIDAD: :capacity; DOMINIO AJENO: :domain; CLASE: :vehicleClass; NÚMERO DE MOTOR: :engineNumber; NÚMERO DE CHASIS: :chassisNumber; NÚMERO VIN: :vinNumber; "
-    const val authentic = "ME DICEN: I) Que reconocen como  suyas  las firmas que calzan el anterior documento que contiene  un  contrato de compraventa de vehículo,  en el cual la primera de los comparecientes es dueño y actual poseedor de un vehículo automotor usado, de las siguientes características: PLACAS: :licensePlate; MARCA: :brand; MODELO: :model; COLOR: :color; AÑO: :factoryYear; CAPACIDAD: :capacity; DOMINIO AJENO: :domain; CLASE: :vehicleClass; NÚMERO DE MOTOR: :engineNumber; NÚMERO DE CHASIS: :chassisNumber; NÚMERO VIN: :vinNumber; "
-}

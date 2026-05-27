@@ -2,5 +2,10 @@ management:
   endpoint:
     health:
       show-details: always
-config:
-  request: ${DOC-WEB:*}
+spring:
+  mvc:
+    servlet:
+      load-on-startup: 1
+app:
+  cors:
+    allowed-origins: ${DOC_WEB_ORIGINS:http://localhost:3000}
