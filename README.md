@@ -49,11 +49,16 @@ created locally on first launch and remain editable offline:
 | --- | --- |
 | Editable templates | `%LOCALAPPDATA%\Central Docs\templates\car-sale\` |
 | Optional settings | `%LOCALAPPDATA%\Central Docs\config\application.yml` |
+| Saved legal agents | `%LOCALAPPDATA%\Central Docs\agents.json` |
 | Generated documents | `%USERPROFILE%\Documents\Central Docs\Documents\` |
 
 The template placeholders must remain present where the associated form values
 should be inserted. The generated local settings file contains an example for
 changing the document output directory.
+
+Saved legal agents are added, edited, and removed in the application through
+the notary selection step. The local JSON file begins empty and is not bundled
+with personal data.
 
 ## Windows Installer
 

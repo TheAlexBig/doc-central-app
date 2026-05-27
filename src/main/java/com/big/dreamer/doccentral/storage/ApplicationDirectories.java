@@ -40,6 +40,10 @@ public class ApplicationDirectories {
         return documentsDirectory;
     }
 
+    public Path agentsFile() {
+        return dataDirectory.resolve("agents.json");
+    }
+
     private Path resolve(String configuredDirectory, Path defaultDirectory) {
         return configuredDirectory == null || configuredDirectory.isBlank()
                 ? defaultDirectory

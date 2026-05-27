@@ -1,5 +1,6 @@
 package com.big.dreamer.doccentral.api;
 
+import com.big.dreamer.doccentral.agent.service.AgentStorageException;
 import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +64,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleGenerationFailure() {
         return response(HttpStatus.INTERNAL_SERVER_ERROR,
                 "The document could not be generated.", Map.of());
+    }
+
+    @ExceptionHandler(AgentStorageException.class)
+    public ResponseEntity<ApiError> handleAgentStorageFailure() {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR,
+                "The locally saved agents could not be accessed.", Map.of());
     }
 
     private ResponseEntity<ApiError> response(HttpStatus status, String message, Map<String, String> fields) {
