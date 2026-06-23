@@ -28,9 +28,9 @@ public class CarSaleDocumentService {
     private static final String LEGAL_WOMAN = "NOTARIA";
     private static final CarSaleDocumentRequest WARM_UP_REQUEST = new CarSaleDocumentRequest(
             new PersonDetails("Inicial", "Vendedor", "Departamento", "Municipio",
-                    "00000000-0", "0000-000000-000-0", "Masculino", "30", "Oficio"),
+                    "00000000-0", "Masculino", "30", "Oficio"),
             new PersonDetails("Inicial", "Comprador", "Departamento", "Municipio",
-                    "00000000-0", "0000-000000-000-0", "Masculino", "30", "Oficio"),
+                    "00000000-0", "Masculino", "30", "Oficio"),
             new CarDetails("P-000", "Marca", "Modelo", "Color", "2026", "5",
                     "Propiedad", "Clase", "MOTOR", "CHASIS", "VIN"),
             new DocumentDetails("Propiedad", "", "PRECIO", "Municipio",
@@ -122,7 +122,6 @@ public class CarSaleDocumentService {
         populated = replaceFirst(populated, ":settlement", person.settlement());
         populated = replaceFirst(populated, ":state", person.state());
         populated = replaceFirst(populated, ":document", person.document());
-        populated = replaceFirst(populated, ":nit", person.nit());
         return replaceFirst(populated, ":gender", title);
     }
 

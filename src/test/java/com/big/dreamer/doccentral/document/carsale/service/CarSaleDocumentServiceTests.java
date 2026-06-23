@@ -39,10 +39,10 @@ class CarSaleDocumentServiceTests {
     void createsVehicleSaleDocumentWithBothSignaturesAndCorrectGenderTitles() throws Exception {
         PersonDetails seller = new PersonDetails(
                 "Maria", "Lopez", "San Salvador", "San Salvador", "00000000-0",
-                "0000-000000-000-0", "Femenino", "35", "Abogada");
+                "Femenino", "35", "Abogada");
         PersonDetails buyer = new PersonDetails(
                 "Carlos", "Perez", "La Libertad", "Santa Tecla", "11111111-1",
-                "1111-111111-111-1", "Masculino", "30", "Ingeniero");
+                "Masculino", "30", "Ingeniero");
         var request = new CarSaleDocumentRequest(
                 seller,
                 buyer,
@@ -69,8 +69,11 @@ class CarSaleDocumentServiceTests {
                     .contains("LA VENDEDORA")
                     .contains("EL COMPRADOR")
                     .contains("NOTARIA")
+                    .contains("SERTRACEN")
                     .contains("a quien no conozco")
-                    .contains("a quien hoy conozco");
+                    .contains("a quien hoy conozco")
+                    .doesNotContain("Numero Identificación Tributaria")
+                    .doesNotContain(":nit");
             assertThat(tableText)
                     .contains("Carlos Perez")
                     .contains("Maria Lopez");

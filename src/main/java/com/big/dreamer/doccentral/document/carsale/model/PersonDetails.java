@@ -9,7 +9,6 @@ public record PersonDetails(
         @JsonProperty("departamento") @NotBlank String state,
         @JsonProperty("domicilio") @NotBlank String settlement,
         @JsonProperty("documento") @NotBlank String document,
-        @JsonProperty("nit") @NotBlank String nit,
         @JsonProperty("genero") @NotBlank String gender,
         @JsonProperty("edad") @NotBlank String age,
         @JsonProperty("oficio") @NotBlank String job) {

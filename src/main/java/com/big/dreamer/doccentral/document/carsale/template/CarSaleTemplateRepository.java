@@ -16,6 +16,7 @@ import java.util.Map;
 public class CarSaleTemplateRepository {
 
     private static final Map<String, String> DEFAULT_TEMPLATES = new LinkedHashMap<>();
+    private static final Map<String, String> LEGACY_TEMPLATES = new LinkedHashMap<>();
 
     static {
         DEFAULT_TEMPLATES.put("people-document.txt", CarSaleTemplates.PEOPLE_DOCUMENT);
@@ -26,6 +27,10 @@ public class CarSaleTemplateRepository {
         DEFAULT_TEMPLATES.put("first-section-end.txt", CarSaleTemplates.FIRST_SECTION_END);
         DEFAULT_TEMPLATES.put("second-section-end.txt", CarSaleTemplates.SECOND_SECTION_END);
         DEFAULT_TEMPLATES.put("legal-authentic.txt", CarSaleTemplates.LEGAL_AUTHENTIC);
+
+        LEGACY_TEMPLATES.put("people-document.txt", CarSaleTemplates.LEGACY_PEOPLE_DOCUMENT);
+        LEGACY_TEMPLATES.put("people-authentic.txt", CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC);
+        LEGACY_TEMPLATES.put("document.txt", CarSaleTemplates.LEGACY_DOCUMENT);
     }
 
     private final ApplicationDirectories directories;
@@ -43,10 +48,21 @@ public class CarSaleTemplateRepository {
                 Path templatePath = templatesDirectory.resolve(template.getKey());
                 if (Files.notExists(templatePath)) {
                     Files.writeString(templatePath, template.getValue(), StandardCharsets.UTF_8);
+                } else if (template.getValue() != null
+                        && template.getValue().equals(DEFAULT_TEMPLATES.get(template.getKey()))
+                        && LEGACY_TEMPLATES.containsKey(template.getKey())) {
+                    migrateLegacyTemplate(templatePath, template.getKey());
                 }
             }
         } catch (IOException exception) {
             throw new DocumentGenerationException("Unable to initialize local templates.", exception);
+        }
+    }
+
+    private void migrateLegacyTemplate(Path templatePath, String fileName) throws IOException {
+        String currentTemplate = Files.readString(templatePath, StandardCharsets.UTF_8);
+        if (currentTemplate.equals(LEGACY_TEMPLATES.get(fileName))) {
+            Files.writeString(templatePath, DEFAULT_TEMPLATES.get(fileName), StandardCharsets.UTF_8);
         }
     }
 
