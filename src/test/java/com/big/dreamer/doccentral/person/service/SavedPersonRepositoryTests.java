@@ -1,6 +1,6 @@
-package com.big.dreamer.doccentral.agent.service;
+package com.big.dreamer.doccentral.person.service;
 
-import com.big.dreamer.doccentral.agent.model.Agent;
+import com.big.dreamer.doccentral.person.model.SavedPerson;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,13 +12,13 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AgentRepositoryTests {
+class SavedPersonRepositoryTests {
 
     @TempDir
     Path temporaryDirectory;
 
     private ApplicationDirectories directories;
-    private AgentRepository repository;
+    private SavedPersonRepository repository;
 
     @BeforeEach
     void setUp() {
@@ -26,33 +26,33 @@ class AgentRepositoryTests {
                 temporaryDirectory.resolve("data").toString(),
                 temporaryDirectory.resolve("documents").toString());
         directories.initialize();
-        repository = new AgentRepository(directories, new ObjectMapper());
+        repository = new SavedPersonRepository(directories, new ObjectMapper());
         repository.initialize();
     }
 
     @Test
-    void initializesAnEmptyLocalAgentFile() throws Exception {
+    void initializesAnEmptyLocalPeopleFile() throws Exception {
         assertThat(repository.findAll()).isEmpty();
-        assertThat(Files.readString(directories.agentsFile())).isEqualTo("[]");
+        assertThat(Files.readString(directories.peopleFile())).isEqualTo("[]");
     }
 
     @Test
-    void savesAndDeletesAnAgentInTheLocalFile() {
-        Agent saved = repository.save(new Agent(
+    void savesAndUpdatesAPersonByDui() {
+        SavedPerson saved = repository.save(new SavedPerson(
                 null, "Ana", "Lopez", "La Libertad", "La Libertad Sur",
-                "Santa Tecla", "00000000", "Femenino", "Notario"));
+                "Santa Tecla", "1990-01-01", "00000000-0", "Femenino",
+                "Comerciante", null));
 
-        assertThat(saved.id()).isNotBlank();
+        assertThat(saved.id()).isEqualTo("000000000");
+        assertThat(saved.rememberedAt()).isNotNull();
         assertThat(repository.findAll()).containsExactly(saved);
 
-        Agent updated = repository.update(saved.id(), new Agent(
+        SavedPerson updated = repository.save(new SavedPerson(
                 null, "Ana", "Perez", "La Libertad", "La Libertad Sur",
-                "Santa Tecla", "00000000", "Femenino", "Abogado")).orElseThrow();
+                "Santa Tecla", "1990-01-01", "000000000", "Femenino",
+                "Abogada", null));
 
-        assertThat(updated.id()).isEqualTo(saved.id());
         assertThat(repository.findAll()).containsExactly(updated);
-
-        assertThat(repository.delete(saved.id())).isTrue();
-        assertThat(repository.findAll()).isEmpty();
+        assertThat(repository.findOccupations()).containsExactly("Abogada");
     }
 }

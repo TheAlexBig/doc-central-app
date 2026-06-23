@@ -8,5 +8,12 @@ public record LegalAgentDetails(
         @JsonProperty("apellido") @NotBlank String lastName,
         @JsonProperty("departamento") @NotBlank String state,
         @JsonProperty("domicilio") @NotBlank String settlement,
-        @JsonProperty("genero") @NotBlank String gender) {
+        @JsonProperty("genero") @NotBlank String gender,
+        @JsonProperty("rol") String role) {
+
+    public LegalAgentDetails {
+        if (role == null || role.isBlank()) {
+            role = "Notario";
+        }
+    }
 }

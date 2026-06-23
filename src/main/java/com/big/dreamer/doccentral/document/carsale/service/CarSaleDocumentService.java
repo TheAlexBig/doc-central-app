@@ -26,6 +26,8 @@ public class CarSaleDocumentService {
     private static final String SELLER_WOMAN = "LA VENDEDORA";
     private static final String LEGAL_DEFAULT = "NOTARIO";
     private static final String LEGAL_WOMAN = "NOTARIA";
+    private static final String LAWYER_DEFAULT = "ABOGADO";
+    private static final String LAWYER_WOMAN = "ABOGADA";
     private static final CarSaleDocumentRequest WARM_UP_REQUEST = new CarSaleDocumentRequest(
             new PersonDetails("Inicial", "Vendedor", "Departamento", "Municipio",
                     "00000000-0", "Masculino", "30", "Oficio"),
@@ -35,7 +37,7 @@ public class CarSaleDocumentService {
                     "Propiedad", "Clase", "MOTOR", "CHASIS", "VIN"),
             new DocumentDetails("Propiedad", "", "PRECIO", "Municipio",
                     "Departamento", "FECHA", "HORA", "No", "No"),
-            new LegalAgentDetails("Inicial", "Notario", "Departamento", "Municipio", "Masculino"));
+            new LegalAgentDetails("Inicial", "Notario", "Departamento", "Municipio", "Masculino", "Notario"));
     private final CarSaleTemplateRepository templateRepository;
 
     public CarSaleDocumentService(CarSaleTemplateRepository templateRepository) {
@@ -158,9 +160,17 @@ public class CarSaleDocumentService {
         populated = replaceFirst(populated, ":signDate", details.signDate());
         populated = replaceFirst(populated, ":givenName", agent.givenName());
         populated = replaceFirst(populated, ":lastName", agent.lastName());
-        populated = replaceFirst(populated, ":gender", isFemale(agent.gender()) ? LEGAL_WOMAN : LEGAL_DEFAULT);
+        populated = replaceFirst(populated, ":gender", legalAgentTitle(agent));
         populated = replaceFirst(populated, ":settlement", agent.settlement());
         return replaceFirst(populated, ":state", agent.state());
+    }
+
+    private String legalAgentTitle(LegalAgentDetails agent) {
+        boolean female = isFemale(agent.gender());
+        if ("abogado".equalsIgnoreCase(agent.role())) {
+            return female ? LAWYER_WOMAN : LAWYER_DEFAULT;
+        }
+        return female ? LEGAL_WOMAN : LEGAL_DEFAULT;
     }
 
     private void createSignatures(XWPFDocument document, PersonDetails buyer, PersonDetails seller) {

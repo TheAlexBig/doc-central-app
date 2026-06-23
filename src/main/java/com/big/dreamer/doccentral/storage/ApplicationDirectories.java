@@ -44,6 +44,22 @@ public class ApplicationDirectories {
         return dataDirectory.resolve("agents.json");
     }
 
+    public Path peopleFile() {
+        return dataDirectory.resolve("people.json");
+    }
+
+    public Path vehiclesFile() {
+        return dataDirectory.resolve("vehicles.json");
+    }
+
+    public Path vehicleOptionExclusionsFile() {
+        return dataDirectory.resolve("vehicle-option-exclusions.json");
+    }
+
+    public Path generatedDocumentsHistoryFile() {
+        return dataDirectory.resolve("generated-documents.json");
+    }
+
     private Path resolve(String configuredDirectory, Path defaultDirectory) {
         return configuredDirectory == null || configuredDirectory.isBlank()
                 ? defaultDirectory

@@ -10,9 +10,16 @@ public record Agent(
         @NotBlank String municipio,
         @NotBlank String distrito,
         @NotBlank String carnet,
-        @NotBlank String genero) {
+        @NotBlank String genero,
+        @NotBlank String rol) {
+
+    public Agent {
+        if (rol == null || rol.isBlank()) {
+            rol = "Notario";
+        }
+    }
 
     public Agent withId(String generatedId) {
-        return new Agent(generatedId, nombres, apellidos, departamento, municipio, distrito, carnet, genero);
+        return new Agent(generatedId, nombres, apellidos, departamento, municipio, distrito, carnet, genero, rol);
     }
 }

@@ -2,6 +2,9 @@ package com.big.dreamer.doccentral.document.carsale.api;
 
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
+import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationRequest;
+import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
+import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
 import jakarta.validation.Valid;
 import org.springframework.http.ContentDisposition;
@@ -30,27 +33,54 @@ public class CarSaleDocumentController {
 
     private final CarSaleDocumentService documentService;
     private final GeneratedDocumentStorage documentStorage;
+    private final GeneratedDocumentHistoryRepository historyRepository;
 
     public CarSaleDocumentController(
             CarSaleDocumentService documentService,
-            GeneratedDocumentStorage documentStorage) {
+            GeneratedDocumentStorage documentStorage,
+            GeneratedDocumentHistoryRepository historyRepository) {
         this.documentService = documentService;
         this.documentStorage = documentStorage;
+        this.historyRepository = historyRepository;
     }
 
     @PostMapping(value = "/car-sale", produces = WORD_CONTENT_TYPE)
     public ResponseEntity<byte[]> generateCarSaleDocument(
             @Valid @RequestBody CarSaleDocumentRequest request) {
         byte[] document = documentService.createDocument(request);
-        String fileName = "compra-venta_" + FILE_CREATED_AT.format(Instant.now()) + ".docx";
+        return wordResponse(fileName(Instant.now()), document, null);
+    }
+
+    @PostMapping(value = "/car-sale/history", produces = WORD_CONTENT_TYPE)
+    public ResponseEntity<byte[]> generateTrackedCarSaleDocument(
+            @Valid @RequestBody CarSaleGenerationRequest request) {
+        Instant createdAt = Instant.now();
+        byte[] document = documentService.createDocument(request.document());
+        String fileName = fileName(createdAt);
+        GeneratedDocumentMetadata metadata = historyRepository.saveCarSale(
+                fileName,
+                createdAt.toString(),
+                request.document(),
+                request.draft());
+        return wordResponse(fileName, document, metadata.id());
+    }
+
+    private String fileName(Instant createdAt) {
+        return "compra-venta_" + FILE_CREATED_AT.format(createdAt) + ".docx";
+    }
+
+    private ResponseEntity<byte[]> wordResponse(String fileName, byte[] document, String historyId) {
         documentStorage.save(fileName, document);
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(fileName, StandardCharsets.UTF_8)
                 .build();
 
-        return ResponseEntity.ok()
+        var response = ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(WORD_CONTENT_TYPE))
-                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
-                .body(document);
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString());
+        if (historyId != null) {
+            response.header("X-Document-History-Id", historyId);
+        }
+        return response.body(document);
     }
 }

@@ -50,7 +50,7 @@ class CarSaleDocumentServiceTests {
                         "Propiedad", "Sedan", "MOTOR1", "CHASIS1", "VIN1"),
                 new DocumentDetails("Propiedad", "", "DIEZ MIL", "Santa Tecla",
                         "La Libertad", "26 de mayo de 2026", "diez horas", "No", "Si"),
-                new LegalAgentDetails("Ana", "Notaria", "La Libertad", "Santa Tecla", "Femenino"));
+                new LegalAgentDetails("Ana", "Notaria", "La Libertad", "Santa Tecla", "Femenino", "Notario"));
 
         byte[] bytes = service.createDocument(request);
 
@@ -69,7 +69,7 @@ class CarSaleDocumentServiceTests {
                     .contains("LA VENDEDORA")
                     .contains("EL COMPRADOR")
                     .contains("NOTARIA")
-                    .contains("SERTRACEN")
+                    .contains("SERTRACEN dentro del plazo de quince días")
                     .contains("a quien no conozco")
                     .contains("a quien hoy conozco")
                     .doesNotContain("Numero Identificación Tributaria")

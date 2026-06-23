@@ -2,6 +2,9 @@ package com.big.dreamer.doccentral.api;
 
 import com.big.dreamer.doccentral.agent.service.AgentStorageException;
 import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
+import com.big.dreamer.doccentral.document.history.service.DocumentHistoryStorageException;
+import com.big.dreamer.doccentral.person.service.PersonStorageException;
+import com.big.dreamer.doccentral.vehicle.service.VehicleStorageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -66,10 +69,28 @@ public class ApiExceptionHandler {
                 "The document could not be generated.", Map.of());
     }
 
+    @ExceptionHandler(DocumentHistoryStorageException.class)
+    public ResponseEntity<ApiError> handleDocumentHistoryStorageFailure() {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR,
+                "The generated document history could not be accessed.", Map.of());
+    }
+
     @ExceptionHandler(AgentStorageException.class)
     public ResponseEntity<ApiError> handleAgentStorageFailure() {
         return response(HttpStatus.INTERNAL_SERVER_ERROR,
                 "The locally saved agents could not be accessed.", Map.of());
+    }
+
+    @ExceptionHandler(PersonStorageException.class)
+    public ResponseEntity<ApiError> handlePersonStorageFailure() {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR,
+                "The locally saved people could not be accessed.", Map.of());
+    }
+
+    @ExceptionHandler(VehicleStorageException.class)
+    public ResponseEntity<ApiError> handleVehicleStorageFailure() {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR,
+                "The locally saved vehicles could not be accessed.", Map.of());
     }
 
     private ResponseEntity<ApiError> response(HttpStatus status, String message, Map<String, String> fields) {
