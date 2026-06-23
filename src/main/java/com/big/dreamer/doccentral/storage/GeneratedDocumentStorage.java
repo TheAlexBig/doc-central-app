@@ -22,7 +22,7 @@ public class GeneratedDocumentStorage {
         try {
             Files.write(documentPath, contents);
         } catch (IOException exception) {
-            throw new DocumentGenerationException("Unable to save the Word document locally.", exception);
+            throw new DocumentGenerationException("Unable to save the generated document locally.", exception);
         }
     }
 
@@ -34,7 +34,7 @@ public class GeneratedDocumentStorage {
         try {
             return Optional.of(Files.readAllBytes(documentPath));
         } catch (IOException exception) {
-            throw new DocumentGenerationException("Unable to read the Word document locally.", exception);
+            throw new DocumentGenerationException("Unable to read the generated document locally.", exception);
         }
     }
 }

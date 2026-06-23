@@ -7,6 +7,12 @@ import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
 import jakarta.annotation.PostConstruct;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -16,10 +22,16 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class CarSaleDocumentService {
 
+    private static final PDType1Font PDF_FONT = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
+    private static final PDType1Font PDF_BOLD_FONT = new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
+    private static final float PDF_FONT_SIZE = 11.0f;
+    private static final float PDF_LINE_HEIGHT = 15.0f;
+    private static final float PDF_MARGIN = 54.0f;
     private static final String BUYER_DEFAULT = "EL COMPRADOR";
     private static final String BUYER_WOMAN = "LA COMPRADORA";
     private static final String SELLER_DEFAULT = "EL VENDEDOR";
@@ -51,12 +63,13 @@ public class CarSaleDocumentService {
 
     public byte[] createDocument(CarSaleDocumentRequest request) {
         CarSaleTemplateRepository.Templates templates = templateRepository.load();
+        DocumentSections sections = createSections(request, templates);
         try (XWPFDocument document = new XWPFDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            createDeclarationSection(document, request, templates);
+            createDeclarationSection(document, sections.declaration());
             createSignatures(document, request.buyer(), request.seller());
             createPageBreak(document);
-            createAuthenticSection(document, request, templates);
+            createAuthenticSection(document, sections.authentic());
             createSignatures(document, request.buyer(), request.seller());
             document.write(output);
             return output.toByteArray();
@@ -65,43 +78,71 @@ public class CarSaleDocumentService {
         }
     }
 
-    private void createDeclarationSection(
-            XWPFDocument document,
+    public byte[] createPdfDocument(CarSaleDocumentRequest request) {
+        CarSaleTemplateRepository.Templates templates = templateRepository.load();
+        DocumentSections sections = createSections(request, templates);
+        try (PDDocument document = new PDDocument();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(document);
+            writer.writeParagraph(sections.declaration());
+            writer.writeSignatures(request.buyer(), request.seller(), buyerTitle(request.buyer()), sellerTitle(request.seller()));
+            writer.newPage();
+            writer.writeParagraph(sections.authentic());
+            writer.writeSignatures(request.buyer(), request.seller(), buyerTitle(request.buyer()), sellerTitle(request.seller()));
+            writer.close();
+            document.save(output);
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw new DocumentGenerationException("Unable to generate the PDF document.", exception);
+        }
+    }
+
+    private DocumentSections createSections(
             CarSaleDocumentRequest request,
             CarSaleTemplateRepository.Templates templates) {
-        XWPFParagraph paragraph = justifiedParagraph(document);
-        String people = populatePeople(
+        String declarationPeople = populatePeople(
                 templates.peopleDocument(),
                 request.seller(),
                 sellerTitle(request.seller()),
                 request.buyer(),
                 buyerTitle(request.buyer()));
-        String car = populateCar(templates.carDocument(), request.vehicle());
-        String documentTerms = populateDocument(
+        String declarationCar = populateCar(templates.carDocument(), request.vehicle());
+        String declarationTerms = populateDocument(
                 templates.document() + templates.firstSectionEnd(),
                 request.document());
-        paragraph.createRun().setText(people + car + documentTerms);
-    }
 
-    private void createAuthenticSection(
-            XWPFDocument document,
-            CarSaleDocumentRequest request,
-            CarSaleTemplateRepository.Templates templates) {
-        XWPFParagraph paragraph = justifiedParagraph(document);
         String legalAgent = populateLegalAgent(templates.legalAuthentic(), request.legalAgent(), request.document());
-        String people = populatePeople(
+        String authenticPeople = populatePeople(
                 templates.peopleAuthentic(),
                 request.seller(),
                 sellerTitle(request.seller()),
                 request.buyer(),
                 buyerTitle(request.buyer()));
-        people = replaceFirst(people, ":identifiesSeller", identificationText(request.document().identifiesSeller()));
-        people = replaceFirst(people, ":identifiesBuyer", identificationText(request.document().identifiesBuyer()));
-        String car = populateCar(templates.carAuthentic(), request.vehicle());
-        String documentTerms = populateDocument(
+        authenticPeople = replaceFirst(
+                authenticPeople,
+                ":identifiesSeller",
+                identificationText(request.document().identifiesSeller()));
+        authenticPeople = replaceFirst(
+                authenticPeople,
+                ":identifiesBuyer",
+                identificationText(request.document().identifiesBuyer()));
+        String authenticCar = populateCar(templates.carAuthentic(), request.vehicle());
+        String authenticTerms = populateDocument(
                 templates.document() + templates.secondSectionEnd(),
                 request.document());
-        paragraph.createRun().setText(legalAgent + people + car + documentTerms);
+        return new DocumentSections(
+                declarationPeople + declarationCar + declarationTerms,
+                legalAgent + authenticPeople + authenticCar + authenticTerms);
+    }
+
+    private void createDeclarationSection(XWPFDocument document, String declaration) {
+        XWPFParagraph paragraph = justifiedParagraph(document);
+        paragraph.createRun().setText(declaration);
+    }
+
+    private void createAuthenticSection(XWPFDocument document, String authentic) {
+        XWPFParagraph paragraph = justifiedParagraph(document);
+        paragraph.createRun().setText(authentic);
     }
 
     private XWPFParagraph justifiedParagraph(XWPFDocument document) {
@@ -221,5 +262,107 @@ public class CarSaleDocumentService {
             return source;
         }
         return source.substring(0, position) + value + source.substring(position + placeholder.length());
+    }
+
+    private record DocumentSections(String declaration, String authentic) {
+    }
+
+    private static final class PdfWriter {
+
+        private final PDDocument document;
+        private PDPageContentStream content;
+        private float y;
+
+        private PdfWriter(PDDocument document) throws IOException {
+            this.document = document;
+            newPage();
+        }
+
+        private void newPage() throws IOException {
+            if (content != null) {
+                content.close();
+            }
+            PDPage page = new PDPage(PDRectangle.LETTER);
+            document.addPage(page);
+            content = new PDPageContentStream(document, page);
+            y = page.getMediaBox().getHeight() - PDF_MARGIN;
+        }
+
+        private void writeParagraph(String text) throws IOException {
+            for (String line : wrap(text, PDRectangle.LETTER.getWidth() - (PDF_MARGIN * 2))) {
+                ensureSpace(PDF_LINE_HEIGHT);
+                content.beginText();
+                content.setFont(PDF_FONT, PDF_FONT_SIZE);
+                content.newLineAtOffset(PDF_MARGIN, y);
+                content.showText(line);
+                content.endText();
+                y -= PDF_LINE_HEIGHT;
+            }
+            y -= PDF_LINE_HEIGHT;
+        }
+
+        private void writeSignatures(
+                PersonDetails buyer,
+                PersonDetails seller,
+                String buyerTitle,
+                String sellerTitle) throws IOException {
+            ensureSpace(PDF_LINE_HEIGHT * 7);
+            y -= PDF_LINE_HEIGHT * 3;
+            float columnWidth = (PDRectangle.LETTER.getWidth() - (PDF_MARGIN * 2)) / 2;
+            writeCentered(buyer.givenName() + " " + buyer.lastName(), PDF_MARGIN, columnWidth, PDF_BOLD_FONT);
+            writeCentered(seller.givenName() + " " + seller.lastName(), PDF_MARGIN + columnWidth, columnWidth, PDF_BOLD_FONT);
+            y -= PDF_LINE_HEIGHT;
+            writeCentered(buyerTitle, PDF_MARGIN, columnWidth, PDF_FONT);
+            writeCentered(sellerTitle, PDF_MARGIN + columnWidth, columnWidth, PDF_FONT);
+            y -= PDF_LINE_HEIGHT * 2;
+        }
+
+        private void writeCentered(String text, float x, float width, PDType1Font font) throws IOException {
+            float textWidth = font.getStringWidth(text) / 1000 * PDF_FONT_SIZE;
+            content.beginText();
+            content.setFont(font, PDF_FONT_SIZE);
+            content.newLineAtOffset(x + ((width - textWidth) / 2), y);
+            content.showText(text);
+            content.endText();
+        }
+
+        private void ensureSpace(float needed) throws IOException {
+            if (y - needed < PDF_MARGIN) {
+                newPage();
+            }
+        }
+
+        private void close() throws IOException {
+            if (content != null) {
+                content.close();
+                content = null;
+            }
+        }
+
+        private List<String> wrap(String text, float maxWidth) throws IOException {
+            List<String> lines = new java.util.ArrayList<>();
+            StringBuilder line = new StringBuilder();
+            for (String word : text.replace('\n', ' ').split("\\s+")) {
+                if (word.isBlank()) {
+                    continue;
+                }
+                String next = line.length() == 0 ? word : line + " " + word;
+                float nextWidth = PDF_FONT.getStringWidth(next) / 1000 * PDF_FONT_SIZE;
+                if (nextWidth <= maxWidth) {
+                    line.setLength(0);
+                    line.append(next);
+                } else {
+                    if (line.length() > 0) {
+                        lines.add(line.toString());
+                    }
+                    line.setLength(0);
+                    line.append(word);
+                }
+            }
+            if (line.length() > 0) {
+                lines.add(line.toString());
+            }
+            return lines;
+        }
     }
 }

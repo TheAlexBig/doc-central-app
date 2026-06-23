@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type")
-                .exposedHeaders("Content-Disposition");
+                .exposedHeaders("Content-Disposition", "X-Document-History-Id");
     }
 
     @Override
