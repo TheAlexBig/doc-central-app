@@ -27,8 +27,6 @@ import java.util.List;
 @Service
 public class CarSaleDocumentService {
 
-    private static final PDType1Font PDF_FONT = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
-    private static final PDType1Font PDF_BOLD_FONT = new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
     private static final float PDF_FONT_SIZE = 11.0f;
     private static final float PDF_LINE_HEIGHT = 15.0f;
     private static final float PDF_MARGIN = 54.0f;
@@ -270,11 +268,15 @@ public class CarSaleDocumentService {
     private static final class PdfWriter {
 
         private final PDDocument document;
+        private final PDType1Font font;
+        private final PDType1Font boldFont;
         private PDPageContentStream content;
         private float y;
 
         private PdfWriter(PDDocument document) throws IOException {
             this.document = document;
+            font = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
+            boldFont = new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
             newPage();
         }
 
@@ -292,7 +294,7 @@ public class CarSaleDocumentService {
             for (String line : wrap(text, PDRectangle.LETTER.getWidth() - (PDF_MARGIN * 2))) {
                 ensureSpace(PDF_LINE_HEIGHT);
                 content.beginText();
-                content.setFont(PDF_FONT, PDF_FONT_SIZE);
+                content.setFont(font, PDF_FONT_SIZE);
                 content.newLineAtOffset(PDF_MARGIN, y);
                 content.showText(line);
                 content.endText();
@@ -309,11 +311,11 @@ public class CarSaleDocumentService {
             ensureSpace(PDF_LINE_HEIGHT * 7);
             y -= PDF_LINE_HEIGHT * 3;
             float columnWidth = (PDRectangle.LETTER.getWidth() - (PDF_MARGIN * 2)) / 2;
-            writeCentered(buyer.givenName() + " " + buyer.lastName(), PDF_MARGIN, columnWidth, PDF_BOLD_FONT);
-            writeCentered(seller.givenName() + " " + seller.lastName(), PDF_MARGIN + columnWidth, columnWidth, PDF_BOLD_FONT);
+            writeCentered(buyer.givenName() + " " + buyer.lastName(), PDF_MARGIN, columnWidth, boldFont);
+            writeCentered(seller.givenName() + " " + seller.lastName(), PDF_MARGIN + columnWidth, columnWidth, boldFont);
             y -= PDF_LINE_HEIGHT;
-            writeCentered(buyerTitle, PDF_MARGIN, columnWidth, PDF_FONT);
-            writeCentered(sellerTitle, PDF_MARGIN + columnWidth, columnWidth, PDF_FONT);
+            writeCentered(buyerTitle, PDF_MARGIN, columnWidth, font);
+            writeCentered(sellerTitle, PDF_MARGIN + columnWidth, columnWidth, font);
             y -= PDF_LINE_HEIGHT * 2;
         }
 
@@ -347,7 +349,7 @@ public class CarSaleDocumentService {
                     continue;
                 }
                 String next = line.length() == 0 ? word : line + " " + word;
-                float nextWidth = PDF_FONT.getStringWidth(next) / 1000 * PDF_FONT_SIZE;
+                float nextWidth = font.getStringWidth(next) / 1000 * PDF_FONT_SIZE;
                 if (nextWidth <= maxWidth) {
                     line.setLength(0);
                     line.append(next);

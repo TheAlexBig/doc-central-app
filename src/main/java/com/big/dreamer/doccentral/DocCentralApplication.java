@@ -8,16 +8,29 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DocCentralApplication {
 
     public static void main(String[] args) {
-        if (DesktopMode.isRequested(args)) {
+        boolean desktopRequested = DesktopMode.isRequested(args);
+        if (desktopRequested) {
+            DesktopMode.configureLogging();
             args = DesktopMode.desktopArguments(args);
             if (DesktopMode.reuseExistingInstance()) {
                 return;
             }
             if (!DesktopMode.claimNewInstance()) {
-                DesktopMode.awaitExistingInstance();
-                return;
+                if (DesktopMode.awaitExistingInstance()) {
+                    return;
+                }
+                if (!DesktopMode.canOpenApplicationPort()) {
+                    return;
+                }
             }
         }
-        SpringApplication.run(DocCentralApplication.class, args);
+        try {
+            SpringApplication.run(DocCentralApplication.class, args);
+        } catch (RuntimeException | Error exception) {
+            if (desktopRequested) {
+                DesktopMode.recordStartupFailure(exception);
+            }
+            throw exception;
+        }
     }
 }

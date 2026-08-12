@@ -4,7 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Desktop;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,8 +32,11 @@ public final class DesktopMode {
     public static final URI APPLICATION_URI = URI.create("http://127.0.0.1:" + PORT + "/");
     private static final URI STATUS_URI = URI.create("http://127.0.0.1:" + PORT + "/api/v1/desktop/status");
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopMode.class);
+    private static final String LOG_FILE_NAME = "central-docs.log";
+    private static final String STARTUP_FAILURE_LOG_FILE_NAME = "startup-failure.log";
     private static FileChannel lockChannel;
     private static FileLock applicationLock;
+    private static Path startupFailureLogPath;
 
     private DesktopMode() {
     }
@@ -46,6 +54,53 @@ public final class DesktopMode {
         }
         return Arrays.stream(argument.substring(prefix.length()).split(","))
                 .anyMatch("desktop"::equals);
+    }
+
+    public static void configureLogging() {
+        Path logsDirectory = UserDataLocations.applicationDataDirectory().resolve("logs");
+        try {
+            Files.createDirectories(logsDirectory);
+            Path applicationLogPath = logsDirectory.resolve(LOG_FILE_NAME);
+            startupFailureLogPath = logsDirectory.resolve(STARTUP_FAILURE_LOG_FILE_NAME);
+            System.setProperty("logging.file.name", applicationLogPath.toString());
+            System.setProperty("logging.logback.rollingpolicy.max-file-size", "10MB");
+            System.setProperty("logging.logback.rollingpolicy.max-history", "7");
+        } catch (IOException exception) {
+            System.err.println("Unable to configure Central Docs desktop logging: " + exception.getMessage());
+        }
+    }
+
+    public static void recordStartupFailure(Throwable exception) {
+        Path failureLogPath = startupFailureLogPath;
+        if (failureLogPath == null) {
+            failureLogPath = UserDataLocations.applicationDataDirectory()
+                    .resolve("logs")
+                    .resolve(STARTUP_FAILURE_LOG_FILE_NAME);
+        }
+        try {
+            Files.createDirectories(failureLogPath.getParent());
+            Files.writeString(
+                    failureLogPath,
+                    startupFailureMessage(exception),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
+        } catch (IOException loggingException) {
+            System.err.println("Unable to write Central Docs startup failure log: " + loggingException.getMessage());
+            exception.printStackTrace(System.err);
+        }
+    }
+
+    private static String startupFailureMessage(Throwable exception) {
+        StringWriter stackTrace = new StringWriter();
+        exception.printStackTrace(new PrintWriter(stackTrace));
+        return System.lineSeparator()
+                + "==== Central Docs startup failure at "
+                + Instant.now()
+                + " ===="
+                + System.lineSeparator()
+                + stackTrace
+                + System.lineSeparator();
     }
 
     public static boolean reuseExistingInstance() {
@@ -82,19 +137,34 @@ public final class DesktopMode {
         }
     }
 
-    public static void awaitExistingInstance() {
-        for (int attempt = 0; attempt < 20; attempt++) {
+    public static boolean awaitExistingInstance() {
+        for (int attempt = 0; attempt < 60; attempt++) {
             if (reuseExistingInstance()) {
-                return;
+                return true;
             }
             try {
                 Thread.sleep(250);
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                return;
+                return true;
             }
         }
         LOGGER.warn("Another Central Docs process is starting, but its browser interface is not ready yet.");
+        return false;
+    }
+
+    public static boolean canOpenApplicationPort() {
+        try (ServerSocket socket = new ServerSocket(PORT, 1, InetAddress.getByName("127.0.0.1"))) {
+            socket.setReuseAddress(false);
+            LOGGER.warn("Central Docs lock is held, but port {} is free. Starting a new local server.", PORT);
+            return true;
+        } catch (IOException exception) {
+            if (reuseExistingInstance()) {
+                return false;
+            }
+            LOGGER.warn("Central Docs cannot start because port {} is not available.", PORT, exception);
+            return false;
+        }
     }
 
     public static String[] desktopArguments(String[] arguments) {
