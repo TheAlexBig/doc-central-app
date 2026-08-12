@@ -10,15 +10,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final String[] allowedOrigins;
+    private final String[] allowedOriginPatterns;
 
-    public WebConfig(@Value("${app.cors.allowed-origins}") String allowedOrigins) {
+    public WebConfig(
+            @Value("${app.cors.allowed-origins}") String allowedOrigins,
+            @Value("${app.cors.allowed-origin-patterns}") String allowedOriginPatterns) {
         this.allowedOrigins = allowedOrigins.split(",");
+        this.allowedOriginPatterns = allowedOriginPatterns.split(",");
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
+                .allowedOriginPatterns(allowedOriginPatterns)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type")
                 .exposedHeaders("Content-Disposition", "X-Document-History-Id");
