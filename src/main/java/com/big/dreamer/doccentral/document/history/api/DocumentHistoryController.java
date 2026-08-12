@@ -1,6 +1,7 @@
 package com.big.dreamer.doccentral.document.history.api;
 
 import com.big.dreamer.doccentral.document.carsale.api.CarSaleDocumentController;
+import com.big.dreamer.doccentral.document.DocumentFormat;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
@@ -55,10 +56,11 @@ public class DocumentHistoryController {
             @PathVariable String id,
             @RequestParam(defaultValue = CarSaleDocumentController.WORD_FORMAT) String format) {
         GeneratedDocumentMetadata metadata = getHistoryItem(id);
-        String normalizedFormat = normalizeFormat(format);
+        DocumentFormat documentFormat = DocumentFormat.from(format);
+        String normalizedFormat = documentFormat.extension();
         String fileName = fileName(metadata, normalizedFormat);
         byte[] document = documentStorage.read(fileName)
-                .orElseGet(() -> createDocument(metadata, normalizedFormat));
+                .orElseGet(() -> createDocument(metadata, documentFormat));
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(fileName, StandardCharsets.UTF_8)
                 .build();
@@ -69,8 +71,8 @@ public class DocumentHistoryController {
                 .body(document);
     }
 
-    private byte[] createDocument(GeneratedDocumentMetadata metadata, String format) {
-        return CarSaleDocumentController.PDF_FORMAT.equals(format)
+    private byte[] createDocument(GeneratedDocumentMetadata metadata, DocumentFormat format) {
+        return format.isPdf()
                 ? documentService.createPdfDocument(metadata.document())
                 : documentService.createDocument(metadata.document());
     }
@@ -83,15 +85,7 @@ public class DocumentHistoryController {
     }
 
     private String contentType(String format) {
-        return CarSaleDocumentController.PDF_FORMAT.equals(format)
-                ? CarSaleDocumentController.PDF_CONTENT_TYPE
-                : CarSaleDocumentController.WORD_CONTENT_TYPE;
-    }
-
-    private String normalizeFormat(String format) {
-        return CarSaleDocumentController.PDF_FORMAT.equalsIgnoreCase(format)
-                ? CarSaleDocumentController.PDF_FORMAT
-                : CarSaleDocumentController.WORD_FORMAT;
+        return DocumentFormat.from(format).contentType();
     }
 
     private static final class DateFormats {

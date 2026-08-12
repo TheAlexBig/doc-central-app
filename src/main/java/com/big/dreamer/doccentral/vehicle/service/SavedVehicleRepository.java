@@ -1,6 +1,7 @@
 package com.big.dreamer.doccentral.vehicle.service;
 
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import com.big.dreamer.doccentral.vehicle.model.VehicleOptionExclusions;
 import com.big.dreamer.doccentral.vehicle.model.SavedVehicle;
 import com.big.dreamer.doccentral.vehicle.model.VehicleOptions;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -176,11 +176,8 @@ public class SavedVehicleRepository {
     }
 
     private void write(List<SavedVehicle> vehicles) {
-        Path temporaryFile = vehiclesFile.resolveSibling(vehiclesFile.getFileName() + ".tmp");
         try {
-            Files.createDirectories(vehiclesFile.getParent());
-            Files.writeString(temporaryFile, objectMapper.writeValueAsString(vehicles), StandardCharsets.UTF_8);
-            Files.move(temporaryFile, vehiclesFile, StandardCopyOption.REPLACE_EXISTING);
+            LocalJsonFileWriter.write(vehiclesFile, objectMapper.writeValueAsString(vehicles));
         } catch (IOException exception) {
             throw new VehicleStorageException("Unable to save local vehicles.", exception);
         }
@@ -197,11 +194,8 @@ public class SavedVehicleRepository {
     }
 
     private void writeExclusions(VehicleOptionExclusions exclusions) {
-        Path temporaryFile = optionExclusionsFile.resolveSibling(optionExclusionsFile.getFileName() + ".tmp");
         try {
-            Files.createDirectories(optionExclusionsFile.getParent());
-            Files.writeString(temporaryFile, objectMapper.writeValueAsString(exclusions), StandardCharsets.UTF_8);
-            Files.move(temporaryFile, optionExclusionsFile, StandardCopyOption.REPLACE_EXISTING);
+            LocalJsonFileWriter.write(optionExclusionsFile, objectMapper.writeValueAsString(exclusions));
         } catch (IOException exception) {
             throw new VehicleStorageException("Unable to save local vehicle option settings.", exception);
         }

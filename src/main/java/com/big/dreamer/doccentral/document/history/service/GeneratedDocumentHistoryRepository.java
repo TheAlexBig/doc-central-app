@@ -3,6 +3,7 @@ package com.big.dreamer.doccentral.document.history.service;
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -103,11 +103,8 @@ public class GeneratedDocumentHistoryRepository {
     }
 
     private void write(List<GeneratedDocumentMetadata> documents) {
-        Path temporaryFile = historyFile.resolveSibling(historyFile.getFileName() + ".tmp");
         try {
-            Files.createDirectories(historyFile.getParent());
-            Files.writeString(temporaryFile, objectMapper.writeValueAsString(documents), StandardCharsets.UTF_8);
-            Files.move(temporaryFile, historyFile, StandardCopyOption.REPLACE_EXISTING);
+            LocalJsonFileWriter.write(historyFile, objectMapper.writeValueAsString(documents));
         } catch (IOException exception) {
             throw new DocumentHistoryStorageException("Unable to save generated document history.", exception);
         }

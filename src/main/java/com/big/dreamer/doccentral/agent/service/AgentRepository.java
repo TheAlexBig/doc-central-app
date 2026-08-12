@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.agent.service;
 
 import com.big.dreamer.doccentral.agent.model.Agent;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -74,11 +74,8 @@ public class AgentRepository {
     }
 
     private void write(List<Agent> agents) {
-        Path temporaryFile = agentsFile.resolveSibling(agentsFile.getFileName() + ".tmp");
         try {
-            Files.createDirectories(agentsFile.getParent());
-            Files.writeString(temporaryFile, objectMapper.writeValueAsString(agents), StandardCharsets.UTF_8);
-            Files.move(temporaryFile, agentsFile, StandardCopyOption.REPLACE_EXISTING);
+            LocalJsonFileWriter.write(agentsFile, objectMapper.writeValueAsString(agents));
         } catch (IOException exception) {
             throw new AgentStorageException("Unable to save local agents.", exception);
         }

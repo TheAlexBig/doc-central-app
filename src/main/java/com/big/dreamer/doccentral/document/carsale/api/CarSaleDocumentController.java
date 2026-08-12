@@ -1,5 +1,6 @@
 package com.big.dreamer.doccentral.document.carsale.api;
 
+import com.big.dreamer.doccentral.document.DocumentFormat;
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
 import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationRequest;
@@ -52,7 +53,7 @@ public class CarSaleDocumentController {
     public ResponseEntity<byte[]> generateCarSaleDocument(
             @Valid @RequestBody CarSaleDocumentRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
-        DocumentResponse document = createDocumentResponse(request, Instant.now(), normalizeFormat(format));
+        DocumentResponse document = createDocumentResponse(request, Instant.now(), DocumentFormat.from(format));
         return fileResponse(document.fileName(), document.contents(), document.contentType(), null);
     }
 
@@ -61,7 +62,7 @@ public class CarSaleDocumentController {
             @Valid @RequestBody CarSaleGenerationRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
         Instant createdAt = Instant.now();
-        DocumentResponse document = createDocumentResponse(request.document(), createdAt, normalizeFormat(format));
+        DocumentResponse document = createDocumentResponse(request.document(), createdAt, DocumentFormat.from(format));
         GeneratedDocumentMetadata metadata = historyRepository.saveCarSale(
                 document.fileName(),
                 createdAt.toString(),
@@ -71,31 +72,37 @@ public class CarSaleDocumentController {
     }
 
     public byte[] createDocument(CarSaleDocumentRequest request, String format) {
-        return PDF_FORMAT.equals(normalizeFormat(format))
+        return DocumentFormat.from(format).isPdf()
                 ? documentService.createPdfDocument(request)
                 : documentService.createDocument(request);
     }
 
     public String contentType(String format) {
-        return PDF_FORMAT.equals(normalizeFormat(format)) ? PDF_CONTENT_TYPE : WORD_CONTENT_TYPE;
+        return DocumentFormat.from(format).contentType();
     }
 
     public String fileName(Instant createdAt, String format) {
-        return "compra-venta_" + FILE_CREATED_AT.format(createdAt) + "." + normalizeFormat(format);
-    }
-
-    public String normalizeFormat(String format) {
-        return PDF_FORMAT.equalsIgnoreCase(format) ? PDF_FORMAT : WORD_FORMAT;
+        return fileName(createdAt, DocumentFormat.from(format));
     }
 
     private DocumentResponse createDocumentResponse(
             CarSaleDocumentRequest request,
             Instant createdAt,
-            String format) {
+            DocumentFormat format) {
         return new DocumentResponse(
                 fileName(createdAt, format),
                 createDocument(request, format),
-                contentType(format));
+                format.contentType());
+    }
+
+    private byte[] createDocument(CarSaleDocumentRequest request, DocumentFormat format) {
+        return format.isPdf()
+                ? documentService.createPdfDocument(request)
+                : documentService.createDocument(request);
+    }
+
+    private String fileName(Instant createdAt, DocumentFormat format) {
+        return "compra-venta_" + FILE_CREATED_AT.format(createdAt) + "." + format.extension();
     }
 
     private ResponseEntity<byte[]> fileResponse(

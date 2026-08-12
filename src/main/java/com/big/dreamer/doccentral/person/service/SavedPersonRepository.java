@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.person.service;
 
 import com.big.dreamer.doccentral.person.model.SavedPerson;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -93,11 +93,8 @@ public class SavedPersonRepository {
     }
 
     private void write(List<SavedPerson> people) {
-        Path temporaryFile = peopleFile.resolveSibling(peopleFile.getFileName() + ".tmp");
         try {
-            Files.createDirectories(peopleFile.getParent());
-            Files.writeString(temporaryFile, objectMapper.writeValueAsString(people), StandardCharsets.UTF_8);
-            Files.move(temporaryFile, peopleFile, StandardCopyOption.REPLACE_EXISTING);
+            LocalJsonFileWriter.write(peopleFile, objectMapper.writeValueAsString(people));
         } catch (IOException exception) {
             throw new PersonStorageException("Unable to save local people.", exception);
         }
