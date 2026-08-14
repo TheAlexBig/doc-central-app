@@ -13,7 +13,7 @@
 
     <groupId>com.big.dreamer</groupId>
     <artifactId>doc-central</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>doc-central</name>
     <description>Central Docs legal document generation API</description>
 

@@ -1,5 +1,9 @@
 # Windows Installer
 
+The requirements and readiness gates for applying to the SignPath Foundation
+open-source signing program are tracked in
+[`SIGNPATH_REQUIREMENTS.md`](SIGNPATH_REQUIREMENTS.md).
+
 `jpackage` does not cross-package native installers: Oracle's Java 21
 documentation requires each package format to be built on the operating system
 where it runs. A Windows MSI therefore cannot be emitted directly by Linux

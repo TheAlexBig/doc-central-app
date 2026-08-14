@@ -4,6 +4,10 @@ Java 21 and Spring Boot 4 local application for generating legal document
 templates as Word files. The packaged Windows application embeds the React
 interface and runs entirely offline on the user's computer.
 
+Central Docs is licensed under the [Apache License 2.0](LICENSE). See the
+[privacy policy](PRIVACY.md), [security policy](SECURITY.md), and
+[code signing policy](CODE_SIGNING_POLICY.md).
+
 ## Development
 
 ```bash
