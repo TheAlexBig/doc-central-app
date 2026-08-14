@@ -69,6 +69,12 @@ class CarSaleDocumentServiceTests {
                     .contains("LA VENDEDORA")
                     .contains("LA COMPRADORA")
                     .contains("NOTARIA")
+                    .contains("MARIA LOPEZ")
+                    .contains("CARLA PEREZ")
+                    .contains("ANA NOTARIA")
+                    .doesNotContain("Maria Lopez")
+                    .doesNotContain("Carla Perez")
+                    .doesNotContain("Ana Notaria")
                     .contains("la primera de las personas comparecientes es dueña y actual poseedora")
                     .contains("la primera vende a la segunda")
                     .contains("la compradora acepta")
@@ -92,8 +98,8 @@ class CarSaleDocumentServiceTests {
                     .doesNotContain("Numero Identificación Tributaria")
                     .doesNotContain(":nit");
             assertThat(tableText)
-                    .contains("Carla Perez")
-                    .contains("Maria Lopez");
+                    .contains("CARLA PEREZ")
+                    .contains("MARIA LOPEZ");
         }
     }
 }

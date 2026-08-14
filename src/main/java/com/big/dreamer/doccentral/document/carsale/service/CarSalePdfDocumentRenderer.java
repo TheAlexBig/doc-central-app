@@ -1,7 +1,5 @@
 package com.big.dreamer.doccentral.document.carsale.service;
 
-import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
-import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -20,15 +18,15 @@ final class CarSalePdfDocumentRenderer {
     private static final float LINE_HEIGHT = 15.0f;
     private static final float MARGIN = 54.0f;
 
-    byte[] render(CarSaleDocumentSections sections, CarSaleDocumentRequest request) {
+    byte[] render(CarSaleDocumentSections sections) {
         try (PDDocument document = new PDDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(document);
             writer.writeParagraph(sections.declaration());
-            writer.writeSignatures(request.buyer(), request.seller(), sections.buyerTitle(), sections.sellerTitle());
+            writer.writeSignatures(sections);
             writer.newPage();
             writer.writeParagraph(sections.authentic());
-            writer.writeSignatures(request.buyer(), request.seller(), sections.buyerTitle(), sections.sellerTitle());
+            writer.writeSignatures(sections);
             writer.close();
             document.save(output);
             return output.toByteArray();
@@ -76,18 +74,15 @@ final class CarSalePdfDocumentRenderer {
         }
 
         private void writeSignatures(
-                PersonDetails buyer,
-                PersonDetails seller,
-                String buyerTitle,
-                String sellerTitle) throws IOException {
+                CarSaleDocumentSections sections) throws IOException {
             ensureSpace(LINE_HEIGHT * 7);
             y -= LINE_HEIGHT * 3;
             float columnWidth = (PDRectangle.LETTER.getWidth() - (MARGIN * 2)) / 2;
-            writeCentered(buyer.givenName() + " " + buyer.lastName(), MARGIN, columnWidth, boldFont);
-            writeCentered(seller.givenName() + " " + seller.lastName(), MARGIN + columnWidth, columnWidth, boldFont);
+            writeCentered(sections.buyerName(), MARGIN, columnWidth, boldFont);
+            writeCentered(sections.sellerName(), MARGIN + columnWidth, columnWidth, boldFont);
             y -= LINE_HEIGHT;
-            writeCentered(buyerTitle, MARGIN, columnWidth, font);
-            writeCentered(sellerTitle, MARGIN + columnWidth, columnWidth, font);
+            writeCentered(sections.buyerTitle(), MARGIN, columnWidth, font);
+            writeCentered(sections.sellerTitle(), MARGIN + columnWidth, columnWidth, font);
             y -= LINE_HEIGHT * 2;
         }
 

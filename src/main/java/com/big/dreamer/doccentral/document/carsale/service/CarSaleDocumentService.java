@@ -38,11 +38,11 @@ public class CarSaleDocumentService {
     }
 
     public byte[] createDocument(CarSaleDocumentRequest request) {
-        return wordRenderer.render(createSections(request), request);
+        return wordRenderer.render(createSections(request));
     }
 
     public byte[] createPdfDocument(CarSaleDocumentRequest request) {
-        return pdfRenderer.render(createSections(request), request);
+        return pdfRenderer.render(createSections(request));
     }
 
     private CarSaleDocumentSections createSections(CarSaleDocumentRequest request) {

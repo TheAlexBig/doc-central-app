@@ -1,7 +1,5 @@
 package com.big.dreamer.doccentral.document.carsale.service;
 
-import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
-import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -13,14 +11,14 @@ import java.io.IOException;
 
 final class CarSaleWordDocumentRenderer {
 
-    byte[] render(CarSaleDocumentSections sections, CarSaleDocumentRequest request) {
+    byte[] render(CarSaleDocumentSections sections) {
         try (XWPFDocument document = new XWPFDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             createTextSection(document, sections.declaration());
-            createSignatures(document, request.buyer(), request.seller(), sections.buyerTitle(), sections.sellerTitle());
+            createSignatures(document, sections);
             createPageBreak(document);
             createTextSection(document, sections.authentic());
-            createSignatures(document, request.buyer(), request.seller(), sections.buyerTitle(), sections.sellerTitle());
+            createSignatures(document, sections);
             document.write(output);
             return output.toByteArray();
         } catch (IOException exception) {
@@ -41,27 +39,26 @@ final class CarSaleWordDocumentRenderer {
 
     private void createSignatures(
             XWPFDocument document,
-            PersonDetails buyer,
-            PersonDetails seller,
-            String buyerTitle,
-            String sellerTitle) {
+            CarSaleDocumentSections sections) {
         XWPFTable table = document.createTable(1, 2);
         table.getCTTbl().getTblPr().unsetTblBorders();
         table.removeBorders();
         table.setWidth("100%");
-        createSignature(table.getRow(0).getCell(0).getParagraphs().getFirst(), buyer, buyerTitle);
-        createSignature(table.getRow(0).getCell(1).getParagraphs().getFirst(), seller, sellerTitle);
+        createSignature(table.getRow(0).getCell(0).getParagraphs().getFirst(),
+                sections.buyerName(), sections.buyerTitle());
+        createSignature(table.getRow(0).getCell(1).getParagraphs().getFirst(),
+                sections.sellerName(), sections.sellerTitle());
         document.createParagraph().createRun().addBreak();
     }
 
-    private void createSignature(XWPFParagraph paragraph, PersonDetails person, String title) {
+    private void createSignature(XWPFParagraph paragraph, String name, String title) {
         paragraph.setAlignment(ParagraphAlignment.CENTER);
         var run = paragraph.createRun();
         run.addBreak();
         run.addBreak();
         run.addBreak();
         run.addBreak();
-        run.setText(person.givenName() + " " + person.lastName());
+        run.setText(name);
         run.addBreak();
         run.setText(title);
     }

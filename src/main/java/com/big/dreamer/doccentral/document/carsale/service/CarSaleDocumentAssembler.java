@@ -7,6 +7,8 @@ import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
 
+import java.util.Locale;
+
 final class CarSaleDocumentAssembler {
 
     private static final String BUYER_DEFAULT = "EL COMPRADOR";
@@ -58,6 +60,8 @@ final class CarSaleDocumentAssembler {
         return new CarSaleDocumentSections(
                 declarationPeople + declarationCar + declarationTerms,
                 legalAgent + authenticPeople + authenticCar + authenticTerms,
+                fullName(request.buyer()),
+                fullName(request.seller()),
                 buyerTitle,
                 sellerTitle);
     }
@@ -69,8 +73,8 @@ final class CarSaleDocumentAssembler {
     }
 
     private String populatePerson(String template, PersonDetails person, String title) {
-        String populated = replaceFirst(template, ":givenName", person.givenName());
-        populated = replaceFirst(populated, ":lastName", person.lastName());
+        String populated = replaceFirst(template, ":givenName", uppercaseName(person.givenName()));
+        populated = replaceFirst(populated, ":lastName", uppercaseName(person.lastName()));
         populated = replaceFirst(populated, ":age", person.age());
         populated = replaceFirst(populated, ":job", person.job());
         populated = replaceFirst(populated, ":settlement", person.settlement());
@@ -131,8 +135,8 @@ final class CarSaleDocumentAssembler {
         populated = replaceFirst(populated, ":state", details.state());
         populated = replaceFirst(populated, ":signHour", details.signHour());
         populated = replaceFirst(populated, ":signDate", details.signDate());
-        populated = replaceFirst(populated, ":givenName", agent.givenName());
-        populated = replaceFirst(populated, ":lastName", agent.lastName());
+        populated = replaceFirst(populated, ":givenName", uppercaseName(agent.givenName()));
+        populated = replaceFirst(populated, ":lastName", uppercaseName(agent.lastName()));
         populated = replaceFirst(populated, ":gender", legalAgentTitle(agent));
         populated = replaceFirst(populated, ":settlement", agent.settlement());
         return replaceFirst(populated, ":state", agent.state());
@@ -167,6 +171,14 @@ final class CarSaleDocumentAssembler {
 
     private String gendered(PersonDetails person, String masculine, String feminine) {
         return isFemale(person.gender()) ? feminine : masculine;
+    }
+
+    private String uppercaseName(String name) {
+        return name.toUpperCase(Locale.forLanguageTag("es-SV"));
+    }
+
+    private String fullName(PersonDetails person) {
+        return uppercaseName(person.givenName()) + " " + uppercaseName(person.lastName());
     }
 
     private String identificationText(String identified) {
