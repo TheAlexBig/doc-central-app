@@ -92,13 +92,38 @@ final class CarSaleDocumentAssembler {
         populated = replaceFirst(populated, ":model", car.model());
         populated = replaceFirst(populated, ":color", car.color());
         populated = replaceFirst(populated, ":factoryYear", car.factoryYear());
-        populated = replaceFirst(populated, ":capacity", car.capacity());
+        if (isHeavyTruck(car)) {
+            populated = replaceFirst(populated, "CAPACIDAD: :capacity; ", "");
+        } else {
+            populated = replaceFirst(populated, ":capacity", car.capacity());
+        }
         populated = replaceFirst(populated, ":domain", car.domain());
         populated = replaceFirst(populated, ":vehicleClass", car.vehicleClass());
         populated = replaceFirst(populated, ":vehicleType", car.vehicleType());
+        populated = replaceFirst(populated, ":heavyTruckDetails", heavyTruckDetails(car));
         populated = replaceFirst(populated, ":engineNumber", car.engineNumber());
         populated = replaceFirst(populated, ":chassisNumber", car.chassisNumber());
         return replaceFirst(populated, ":vinNumber", car.vinNumber());
+    }
+
+    private String heavyTruckDetails(CarDetails car) {
+        if (!isHeavyTruck(car)) {
+            return "";
+        }
+        return "EJES: " + value(car.axles())
+                + "; TARA: " + value(car.tare())
+                + "; TIPO DE CAPACIDAD: " + value(car.capacityType())
+                + "; CAPACIDAD DE CARGA: " + value(car.loadCapacity())
+                + "; CAPACIDAD MÁXIMA: " + value(car.maximumCapacity())
+                + "; TRACCIÓN: " + value(car.traction()) + "; ";
+    }
+
+    private String value(String value) {
+        return value == null ? "" : value;
+    }
+
+    private boolean isHeavyTruck(CarDetails car) {
+        return "camión pesado".equalsIgnoreCase(car.vehicleClass());
     }
 
     private String populateDocument(

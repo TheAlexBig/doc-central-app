@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -53,7 +54,8 @@ public class CarSaleDocumentController {
     public ResponseEntity<byte[]> generateCarSaleDocument(
             @Valid @RequestBody CarSaleDocumentRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
-        DocumentResponse document = createDocumentResponse(request, Instant.now(), DocumentFormat.from(format));
+        DocumentResponse document = createDocumentResponse(
+                request, Instant.now(), DocumentFormat.from(format), request.vehicle().licensePlate());
         return fileResponse(document.fileName(), document.contents(), document.contentType(), null);
     }
 
@@ -62,7 +64,8 @@ public class CarSaleDocumentController {
             @Valid @RequestBody CarSaleGenerationRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
         Instant createdAt = Instant.now();
-        DocumentResponse document = createDocumentResponse(request.document(), createdAt, DocumentFormat.from(format));
+        DocumentResponse document = createDocumentResponse(
+                request.document(), createdAt, DocumentFormat.from(format), draftLicensePlate(request));
         GeneratedDocumentMetadata metadata = historyRepository.saveCarSale(
                 document.fileName(),
                 createdAt.toString(),
@@ -88,9 +91,10 @@ public class CarSaleDocumentController {
     private DocumentResponse createDocumentResponse(
             CarSaleDocumentRequest request,
             Instant createdAt,
-            DocumentFormat format) {
+            DocumentFormat format,
+            String licensePlate) {
         return new DocumentResponse(
-                fileName(createdAt, format),
+                fileName(createdAt, format, licensePlate),
                 createDocument(request, format),
                 format.contentType());
     }
@@ -103,6 +107,25 @@ public class CarSaleDocumentController {
 
     private String fileName(Instant createdAt, DocumentFormat format) {
         return "compra-venta_" + FILE_CREATED_AT.format(createdAt) + "." + format.extension();
+    }
+
+    private String fileName(Instant createdAt, DocumentFormat format, String licensePlate) {
+        String safePlate = licensePlate == null
+                ? ""
+                : licensePlate.trim().replaceAll("[^\\p{L}\\p{N}-]+", "-");
+        String platePart = safePlate.isBlank() ? "" : safePlate + "_";
+        return "compra-venta_" + platePart + FILE_CREATED_AT.format(createdAt) + "." + format.extension();
+    }
+
+    private String draftLicensePlate(CarSaleGenerationRequest request) {
+        Object vehicle = request.draft() == null ? null : request.draft().get("carStates");
+        if (vehicle instanceof Map<?, ?> vehicleData) {
+            Object plate = vehicleData.get("placa");
+            if (plate != null && !plate.toString().isBlank()) {
+                return plate.toString();
+            }
+        }
+        return request.document().vehicle().licensePlate();
     }
 
     private ResponseEntity<byte[]> fileResponse(

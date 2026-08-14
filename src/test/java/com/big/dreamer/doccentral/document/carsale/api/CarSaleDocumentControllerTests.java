@@ -53,12 +53,14 @@ class CarSaleDocumentControllerTests {
     @Test
     void generatesTrackedPdfAndCanDownloadHistoricalDocx() {
         ResponseEntity<byte[]> pdfResponse = documentController.generateTrackedCarSaleDocument(
-                new CarSaleGenerationRequest(carSaleRequest(), Map.of("draft", true)),
+                new CarSaleGenerationRequest(
+                        carSaleRequest(), Map.of("carStates", Map.of("placa", "C-987654"))),
                 "pdf");
 
         assertThat(pdfResponse.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(pdfResponse.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PDF);
         assertThat(pdfResponse.getHeaders().getContentDisposition().getFilename()).endsWith(".pdf");
+        assertThat(pdfResponse.getHeaders().getContentDisposition().getFilename()).contains("C-987654");
         assertThat(pdfResponse.getBody()).isNotEmpty();
 
         String historyId = pdfResponse.getHeaders().getFirst("X-Document-History-Id");
