@@ -1,8 +1,20 @@
-# Central Docs Desktop Application
+# Central Docs El Salvador
 
-Java 21 and Spring Boot 4 local application for generating legal document
-templates as Word files. The packaged Windows application embeds the React
-interface and runs entirely offline on the user's computer.
+Central Docs is an offline-first Windows desktop application for generating
+legal documents in El Salvador. Its first implemented workflow prepares
+vehicle purchase-and-sale documents in Word and PDF from a guided Spanish
+form. The packaged application runs on the user's computer without a cloud
+account or external database.
+
+## Download
+
+Download the current MSI and its SHA-256 checksum from the
+[latest Central Docs release](https://github.com/TheAlexBig/doc-central-app/releases/latest).
+
+Code signing policy: Free code signing provided by SignPath.io, certificate by
+SignPath Foundation. Releases published before completion of the SignPath
+onboarding process, including `v1.0.3`, are not yet Authenticode-signed and may
+display `Unknown publisher` in Windows.
 
 Central Docs is licensed under the [Apache License 2.0](LICENSE). See the
 [privacy policy](PRIVACY.md), [security policy](SECURITY.md), and
