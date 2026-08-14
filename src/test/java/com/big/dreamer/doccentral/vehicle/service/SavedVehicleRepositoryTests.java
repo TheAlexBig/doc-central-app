@@ -42,7 +42,7 @@ class SavedVehicleRepositoryTests {
     void savesAVehicleAndBuildsOptions() {
         SavedVehicle saved = repository.save(new SavedVehicle(
                 null, "P-123456", "Toyota", "Corolla Cross",
-                "Gris", "2022-01-01", "5", "Propiedad", "Automovil",
+                "Gris", "2022-01-01", "5", "ASS", "Propiedad", "Automóvil", "Sedán",
                 "ABC123", "DEF456", "GHI789", null));
 
         assertThat(saved.id()).isEqualTo("P123456");

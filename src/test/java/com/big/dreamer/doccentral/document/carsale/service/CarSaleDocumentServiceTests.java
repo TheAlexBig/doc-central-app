@@ -41,13 +41,13 @@ class CarSaleDocumentServiceTests {
                 "Maria", "Lopez", "San Salvador", "San Salvador", "00000000-0",
                 "Femenino", "35", "Abogada");
         PersonDetails buyer = new PersonDetails(
-                "Carlos", "Perez", "La Libertad", "Santa Tecla", "11111111-1",
-                "Masculino", "30", "Ingeniero");
+                "Carla", "Perez", "La Libertad", "Santa Tecla", "11111111-1",
+                "Femenino", "30", "Ingeniera");
         var request = new CarSaleDocumentRequest(
                 seller,
                 buyer,
-                new CarDetails("P-123", "Toyota", "Corolla", "Azul", "2020", "5",
-                        "Propiedad", "Sedan", "MOTOR1", "CHASIS1", "VIN1"),
+                new CarDetails("P-123", "Toyota", "Corolla", "Azul", "2020", "CINCO ASS",
+                        "Propiedad", "Automóvil", "Sedán", "MOTOR1", "CHASIS1", "VIN1"),
                 new DocumentDetails("Propiedad", "", "DIEZ MIL", "Santa Tecla",
                         "La Libertad", "26 de mayo de 2026", "diez horas", "No", "Si"),
                 new LegalAgentDetails("Ana", "Notaria", "La Libertad", "Santa Tecla", "Femenino", "Notario"));
@@ -67,15 +67,30 @@ class CarSaleDocumentServiceTests {
 
             assertThat(text)
                     .contains("LA VENDEDORA")
-                    .contains("EL COMPRADOR")
+                    .contains("LA COMPRADORA")
                     .contains("NOTARIA")
+                    .contains("la primera de las personas comparecientes es dueña y actual poseedora")
+                    .contains("la primera vende a la segunda")
+                    .contains("la compradora acepta")
+                    .contains("dándose por recibida")
+                    .contains("le entrega la vendedora")
+                    .contains("ambas contratantes")
+                    .contains("las comparecientes")
                     .contains("SERTRACEN dentro del plazo de quince días")
+                    .contains("CAPACIDAD: CINCO ASS")
+                    .contains("DOMINIO: Propiedad")
+                    .contains("CLASE: Automóvil")
+                    .contains("TIPO: Sedán")
+                    .doesNotContain("DOMINIO AJENO")
+                    .doesNotContain("el comprador")
+                    .doesNotContain("el vendedor")
+                    .doesNotContain("dándose por recibido")
                     .contains("a quien no conozco")
                     .contains("a quien hoy conozco")
                     .doesNotContain("Numero Identificación Tributaria")
                     .doesNotContain(":nit");
             assertThat(tableText)
-                    .contains("Carlos Perez")
+                    .contains("Carla Perez")
                     .contains("Maria Lopez");
         }
     }

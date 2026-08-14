@@ -39,6 +39,7 @@ public class ApiExceptionHandler {
             Map.entry("capacity", "capacidad"),
             Map.entry("domain", "dominio"),
             Map.entry("vehicleClass", "clase"),
+            Map.entry("vehicleType", "tipo"),
             Map.entry("engineNumber", "num_motor"),
             Map.entry("chassisNumber", "num_chasis"),
             Map.entry("vinNumber", "num_vin"),

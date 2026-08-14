@@ -18,7 +18,7 @@ public class DocumentRequestWarmUp {
                 "domicilio":"Municipio","documento":"00000000-0",
                 "genero":"Masculino","edad":"30","oficio":"Oficio"},
               "vehiculo": {"placa":"P-000","marca":"Marca","modelo":"Modelo","color":"Color",
-                "fabricado":"2026","capacidad":"5","dominio":"Propiedad","clase":"Clase",
+                "fabricado":"2026","capacidad":"CINCO ASS","dominio":"Propiedad","clase":"Automóvil","tipo":"Sedán",
                 "num_motor":"MOTOR","num_chasis":"CHASIS","num_vin":"VIN"},
               "documento": {"calidad_de":"Propiedad","institucion":"","precio":"PRECIO",
                 "domicilio":"Municipio","departamento":"Departamento","fecha_firma":"FECHA",

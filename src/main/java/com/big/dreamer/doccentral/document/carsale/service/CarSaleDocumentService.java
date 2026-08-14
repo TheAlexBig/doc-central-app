@@ -17,8 +17,8 @@ public class CarSaleDocumentService {
                     "00000000-0", "Masculino", "30", "Oficio"),
             new PersonDetails("Inicial", "Comprador", "Departamento", "Municipio",
                     "00000000-0", "Masculino", "30", "Oficio"),
-            new CarDetails("P-000", "Marca", "Modelo", "Color", "2026", "5",
-                    "Propiedad", "Clase", "MOTOR", "CHASIS", "VIN"),
+            new CarDetails("P-000", "Marca", "Modelo", "Color", "2026", "CINCO ASS",
+                    "Propiedad", "Automóvil", "Sedán", "MOTOR", "CHASIS", "VIN"),
             new DocumentDetails("Propiedad", "", "PRECIO", "Municipio",
                     "Departamento", "FECHA", "HORA", "No", "No"),
             new LegalAgentDetails("Inicial", "Notario", "Departamento", "Municipio", "Masculino", "Notario"));

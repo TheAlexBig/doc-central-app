@@ -10,13 +10,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
 public class CarSaleTemplateRepository {
 
     private static final Map<String, String> DEFAULT_TEMPLATES = new LinkedHashMap<>();
-    private static final Map<String, String> LEGACY_TEMPLATES = new LinkedHashMap<>();
+    private static final Map<String, List<String>> LEGACY_TEMPLATES = new LinkedHashMap<>();
 
     static {
         DEFAULT_TEMPLATES.put("people-document.txt", CarSaleTemplates.PEOPLE_DOCUMENT);
@@ -28,9 +29,19 @@ public class CarSaleTemplateRepository {
         DEFAULT_TEMPLATES.put("second-section-end.txt", CarSaleTemplates.SECOND_SECTION_END);
         DEFAULT_TEMPLATES.put("legal-authentic.txt", CarSaleTemplates.LEGAL_AUTHENTIC);
 
-        LEGACY_TEMPLATES.put("people-document.txt", CarSaleTemplates.LEGACY_PEOPLE_DOCUMENT);
-        LEGACY_TEMPLATES.put("people-authentic.txt", CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC);
-        LEGACY_TEMPLATES.put("document.txt", CarSaleTemplates.LEGACY_DOCUMENT);
+        LEGACY_TEMPLATES.put("people-document.txt", List.of(CarSaleTemplates.LEGACY_PEOPLE_DOCUMENT));
+        LEGACY_TEMPLATES.put("people-authentic.txt", List.of(CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC));
+        LEGACY_TEMPLATES.put("car-document.txt", List.of(
+                CarSaleTemplates.RELEASED_CAR_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_CAR_DOCUMENT));
+        LEGACY_TEMPLATES.put("car-authentic.txt", List.of(
+                CarSaleTemplates.RELEASED_CAR_AUTHENTIC,
+                CarSaleTemplates.PREVIOUS_CAR_AUTHENTIC));
+        LEGACY_TEMPLATES.put("document.txt", List.of(
+                CarSaleTemplates.LEGACY_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_DOCUMENT));
+        LEGACY_TEMPLATES.put("first-section-end.txt", List.of(CarSaleTemplates.PREVIOUS_FIRST_SECTION_END));
+        LEGACY_TEMPLATES.put("second-section-end.txt", List.of(CarSaleTemplates.PREVIOUS_SECOND_SECTION_END));
     }
 
     private final ApplicationDirectories directories;
@@ -61,7 +72,7 @@ public class CarSaleTemplateRepository {
 
     private void migrateLegacyTemplate(Path templatePath, String fileName) throws IOException {
         String currentTemplate = Files.readString(templatePath, StandardCharsets.UTF_8);
-        if (currentTemplate.equals(LEGACY_TEMPLATES.get(fileName))) {
+        if (LEGACY_TEMPLATES.get(fileName).contains(currentTemplate)) {
             Files.writeString(templatePath, DEFAULT_TEMPLATES.get(fileName), StandardCharsets.UTF_8);
         }
     }

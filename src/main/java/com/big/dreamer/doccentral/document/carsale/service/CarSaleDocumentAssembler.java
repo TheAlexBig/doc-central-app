@@ -29,10 +29,11 @@ final class CarSaleDocumentAssembler {
                 sellerTitle,
                 request.buyer(),
                 buyerTitle);
-        String declarationCar = populateCar(templates.carDocument(), request.vehicle());
+        String declarationCar = populateCar(
+                templates.carDocument(), request.vehicle(), request.seller());
         String declarationTerms = populateDocument(
                 templates.document() + templates.firstSectionEnd(),
-                request.document());
+                request.document(), request.seller(), request.buyer());
 
         String legalAgent = populateLegalAgent(templates.legalAuthentic(), request.legalAgent(), request.document());
         String authenticPeople = populatePeople(
@@ -49,10 +50,11 @@ final class CarSaleDocumentAssembler {
                 authenticPeople,
                 ":identifiesBuyer",
                 identificationText(request.document().identifiesBuyer()));
-        String authenticCar = populateCar(templates.carAuthentic(), request.vehicle());
+        String authenticCar = populateCar(
+                templates.carAuthentic(), request.vehicle(), request.seller());
         String authenticTerms = populateDocument(
                 templates.document() + templates.secondSectionEnd(),
-                request.document());
+                request.document(), request.seller(), request.buyer());
         return new CarSaleDocumentSections(
                 declarationPeople + declarationCar + declarationTerms,
                 legalAgent + authenticPeople + authenticCar + authenticTerms,
@@ -77,8 +79,11 @@ final class CarSaleDocumentAssembler {
         return replaceFirst(populated, ":gender", title);
     }
 
-    private String populateCar(String template, CarDetails car) {
-        String populated = replaceFirst(template, ":licensePlate", car.licensePlate());
+    private String populateCar(String template, CarDetails car, PersonDetails seller) {
+        String populated = replaceAll(template, ":sellerOrdinal", ordinal(seller, true));
+        populated = replaceAll(populated, ":sellerOwner", gendered(seller, "dueño", "dueña"));
+        populated = replaceAll(populated, ":sellerHolder", gendered(seller, "poseedor", "poseedora"));
+        populated = replaceFirst(populated, ":licensePlate", car.licensePlate());
         populated = replaceFirst(populated, ":brand", car.brand());
         populated = replaceFirst(populated, ":model", car.model());
         populated = replaceFirst(populated, ":color", car.color());
@@ -86,17 +91,35 @@ final class CarSaleDocumentAssembler {
         populated = replaceFirst(populated, ":capacity", car.capacity());
         populated = replaceFirst(populated, ":domain", car.domain());
         populated = replaceFirst(populated, ":vehicleClass", car.vehicleClass());
+        populated = replaceFirst(populated, ":vehicleType", car.vehicleType());
         populated = replaceFirst(populated, ":engineNumber", car.engineNumber());
         populated = replaceFirst(populated, ":chassisNumber", car.chassisNumber());
         return replaceFirst(populated, ":vinNumber", car.vinNumber());
     }
 
-    private String populateDocument(String template, DocumentDetails details) {
+    private String populateDocument(
+            String template,
+            DocumentDetails details,
+            PersonDetails seller,
+            PersonDetails buyer) {
         String populated = replaceFirst(template, ":garment", details.garment());
         String institution = details.institution() == null || details.institution().isBlank()
                 ? ""
                 : "con " + details.institution();
         populated = replaceFirst(populated, ":institution", institution);
+        populated = replaceAll(populated, ":sellerOrdinal", ordinal(seller, true));
+        populated = replaceAll(populated, ":buyerOrdinal", ordinal(buyer, false));
+        populated = replaceAll(populated, ":buyerRole", gendered(buyer, "el comprador", "la compradora"));
+        populated = replaceAll(populated, ":buyerReceived", gendered(buyer, "recibido", "recibida"));
+        populated = replaceAll(populated, ":sellerRole", gendered(seller, "el vendedor", "la vendedora"));
+        populated = replaceAll(populated, ":bothContracting",
+                isFemale(seller.gender()) && isFemale(buyer.gender())
+                        ? "ambas contratantes"
+                        : "ambos contratantes");
+        populated = replaceAll(populated, ":appearingParties",
+                isFemale(seller.gender()) && isFemale(buyer.gender())
+                        ? "las comparecientes"
+                        : "los comparecientes");
         populated = replaceFirst(populated, ":price", details.price());
         populated = replaceFirst(populated, ":settlement", details.settlement());
         populated = replaceFirst(populated, ":state", details.state());
@@ -135,6 +158,17 @@ final class CarSaleDocumentAssembler {
         return "femenino".equalsIgnoreCase(gender);
     }
 
+    private String ordinal(PersonDetails person, boolean first) {
+        if (first) {
+            return gendered(person, "el primero", "la primera");
+        }
+        return gendered(person, "el segundo", "la segunda");
+    }
+
+    private String gendered(PersonDetails person, String masculine, String feminine) {
+        return isFemale(person.gender()) ? feminine : masculine;
+    }
+
     private String identificationText(String identified) {
         return "No".equalsIgnoreCase(identified) ? "a quien no conozco" : "a quien hoy conozco";
     }
@@ -145,5 +179,9 @@ final class CarSaleDocumentAssembler {
             return source;
         }
         return source.substring(0, position) + value + source.substring(position + placeholder.length());
+    }
+
+    private String replaceAll(String source, String placeholder, String value) {
+        return source.replace(placeholder, value);
     }
 }

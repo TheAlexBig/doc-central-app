@@ -12,6 +12,7 @@ public record CarDetails(
         @JsonProperty("capacidad") @NotBlank String capacity,
         @JsonProperty("dominio") @NotBlank String domain,
         @JsonProperty("clase") @NotBlank String vehicleClass,
+        @JsonProperty("tipo") @NotBlank String vehicleType,
         @JsonProperty("num_motor") @NotBlank String engineNumber,
         @JsonProperty("num_chasis") @NotBlank String chassisNumber,
         @JsonProperty("num_vin") @NotBlank String vinNumber) {
