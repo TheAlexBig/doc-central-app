@@ -49,12 +49,12 @@ No network service, database, Docker installation, or separately installed
 Java runtime is needed after the MSI is installed. Default templates are
 created locally on first launch and remain editable offline:
 
-| Content | Windows location |
-| --- | --- |
-| Editable templates | `%LOCALAPPDATA%\Central Docs\templates\car-sale\` |
-| Optional settings | `%LOCALAPPDATA%\Central Docs\config\application.yml` |
-| Saved legal agents | `%LOCALAPPDATA%\Central Docs\agents.json` |
-| Generated documents | `%USERPROFILE%\Documents\Central Docs\Documents\` |
+| Content             | Windows location                                     |
+| ------------------- | ---------------------------------------------------- |
+| Editable templates  | `%LOCALAPPDATA%\Central Docs\templates\car-sale\`    |
+| Optional settings   | `%LOCALAPPDATA%\Central Docs\config\application.yml` |
+| Saved legal agents  | `%LOCALAPPDATA%\Central Docs\agents.json`            |
+| Generated documents | `%USERPROFILE%\Documents\Central Docs\Documents\`    |
 
 The template placeholders must remain present where the associated form values
 should be inserted. The generated local settings file contains an example for
@@ -76,7 +76,9 @@ included Windows build workflow:
 ```
 
 It waits for the Windows runner and downloads the MSI artifact under
-`target/windows-installer/<workflow-run-id>/`.
+`target/windows-installer/<workflow-run-id>/`. A successful release build also
+publishes `Central.Docs-<version>.msi` and `SHA256SUMS.txt` automatically in a
+new GitHub Release. Existing releases are never overwritten.
 
 Each MSI created by the GitHub workflow receives a GitHub artifact attestation.
 When the installed GitHub CLI supports `gh attestation`, the Linux helper

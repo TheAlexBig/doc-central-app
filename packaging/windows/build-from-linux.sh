@@ -4,6 +4,7 @@ set -euo pipefail
 version="${1:-1.0.0}"
 frontend_ref="${2:-main}"
 backend_ref="${3:-master}"
+publish_release="${4:-true}"
 repository="${DOC_CENTRAL_APP_REPOSITORY:-TheAlexBig/doc-central-app}"
 output_directory="${DOC_CENTRAL_WINDOWS_OUTPUT:-target/windows-installer}"
 workflow="windows-installer.yml"
@@ -26,6 +27,7 @@ gh workflow run "$workflow" \
   --ref "$backend_ref" \
   --field "version=$version" \
   --field "frontend_ref=$frontend_ref" \
+  --field "publish_release=$publish_release" \
   --field "request_id=$request_id"
 
 run_id=""
@@ -68,6 +70,18 @@ if (( ${#installers[@]} == 0 )); then
   exit 1
 fi
 
+checksum_file="$download_directory/SHA256SUMS.txt"
+if [[ ! -f "$checksum_file" ]]; then
+  printf 'No downloaded SHA256SUMS.txt was found in %s.\n' "$download_directory" >&2
+  exit 1
+fi
+
+printf 'Verifying the downloaded MSI checksum...\n'
+(
+  cd "$download_directory"
+  sha256sum --check SHA256SUMS.txt
+)
+
 if gh attestation verify --help >/dev/null 2>&1; then
   for installer in "${installers[@]}"; do
     printf 'Verifying GitHub build provenance for %s...\n' "$installer"
@@ -81,3 +95,7 @@ else
 fi
 
 printf 'Downloaded the Windows MSI artifact into %s\n' "$download_directory"
+if [[ "$publish_release" == "true" ]]; then
+  printf 'Published release: https://github.com/%s/releases/tag/v%s\n' \
+    "$repository" "$version"
+fi

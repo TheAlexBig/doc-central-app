@@ -25,10 +25,10 @@ Docs or its maintainer.
 
 The signed product is assembled from two repositories:
 
-| Component | Repository | Default branch |
-| --- | --- | --- |
-| Desktop host, API, templates, and installer workflow | `TheAlexBig/doc-central-app` | `master` |
-| React user interface | `TheAlexBig/doc-central-forms` | `main` |
+| Component                                            | Repository                     | Default branch |
+| ---------------------------------------------------- | ------------------------------ | -------------- |
+| Desktop host, API, templates, and installer workflow | `TheAlexBig/doc-central-app`   | `master`       |
+| React user interface                                 | `TheAlexBig/doc-central-forms` | `main`         |
 
 Both repositories are part of the product's source and policy scope. A release
 is not eligible for signing unless the exact frontend revision is recorded by
@@ -115,11 +115,11 @@ The repository and every release/download page MUST link to a policy headed
 
 The following roles MUST be named and kept current:
 
-| Role | Responsibility | Assigned member(s) |
-| --- | --- | --- |
-| Committer/author | Maintains source and build scripts | `TheAlexBig` |
-| Reviewer | Reviews contributions from non-committers | `TheAlexBig` |
-| Signing approver | Manually approves release signing requests | `TheAlexBig` |
+| Role             | Responsibility                             | Assigned member(s) |
+| ---------------- | ------------------------------------------ | ------------------ |
+| Committer/author | Maintains source and build scripts         | `TheAlexBig`       |
+| Reviewer         | Reviews contributions from non-committers  | `TheAlexBig`       |
+| Signing approver | Manually approves release signing requests | `TheAlexBig`       |
 
 - All assigned members MUST use multi-factor authentication for GitHub and
   SignPath.
@@ -167,9 +167,11 @@ After signing, the workflow MUST:
 - upload or publish only the signed MSI as the release artifact;
 - generate and publish the SHA-256 checksum of the signed MSI.
 
-Current status: **Partially satisfied**. Tests and GitHub attestation exist, but
-version consistency, source-revision metadata, SignPath submission, signature
-verification, and signed checksum publication are not yet implemented.
+Current status: **Partially satisfied**. Version consistency, source-revision
+metadata, SHA-256 generation, GitHub artifact upload, provenance attestation,
+and immutable GitHub Release publication are automated in
+`windows-installer.yml`. SignPath submission and Authenticode verification
+remain pending until the project is accepted and configured by SignPath.
 
 ### R8. Artifact configuration
 

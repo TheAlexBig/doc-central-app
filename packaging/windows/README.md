@@ -19,10 +19,13 @@ GitHub branches, run this on Linux:
 ./packaging/windows/build-from-linux.sh 1.0.0 main master
 ```
 
-Arguments are `version`, `frontend ref`, and `backend ref`. The script uses
-the GitHub CLI to dispatch the Windows build, wait for it, download the MSI to
-`target/windows-installer/<workflow-run-id>/`, and verify its GitHub artifact
-attestation when the installed GitHub CLI supports `gh attestation`.
+Arguments are `version`, `frontend ref`, `backend ref`, and an optional
+`publish release` boolean that defaults to `true`. Pass `false` as the fourth
+argument for a verification build that must not create a release. The script
+uses the GitHub CLI to dispatch the Windows build, wait for it, download the
+MSI and checksum to `target/windows-installer/<workflow-run-id>/`, verify the
+SHA-256 checksum, and verify its GitHub artifact attestation when the installed
+GitHub CLI supports `gh attestation`.
 Authenticate once before using it:
 
 ```bash
@@ -52,6 +55,22 @@ gh attestation verify path/to/CentralDocs-1.0.0.msi \
 Artifact attestations establish build provenance; they do not Authenticode
 sign the MSI or set a Windows publisher identity. Windows can therefore still
 display `Unknown publisher` when an attested MSI is launched.
+
+## Automated Releases
+
+By default, a successful workflow run creates the immutable tag
+`v<version>` and publishes a GitHub Release containing:
+
+- `Central.Docs-<version>.msi`;
+- `SHA256SUMS.txt` generated from that exact MSI;
+- release notes containing the backend revision, frontend revision, and
+  GitHub Actions run ID.
+
+The workflow refuses to replace an existing release. Increment the version in
+the backend `pom.xml`, frontend `package.json` and `package-lock.json` before
+publishing. All three values must match the workflow input or the build fails
+before packaging. The final MSI receives its GitHub provenance attestation
+before it is published.
 
 ## Build On Windows
 
