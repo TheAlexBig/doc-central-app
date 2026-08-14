@@ -40,8 +40,11 @@ public class CarSaleTemplateRepository {
         LEGACY_TEMPLATES.put("document.txt", List.of(
                 CarSaleTemplates.LEGACY_DOCUMENT,
                 CarSaleTemplates.PREVIOUS_DOCUMENT));
-        LEGACY_TEMPLATES.put("first-section-end.txt", List.of(CarSaleTemplates.PREVIOUS_FIRST_SECTION_END));
+        LEGACY_TEMPLATES.put("first-section-end.txt", List.of(
+                CarSaleTemplates.PREVIOUS_FIRST_SECTION_END,
+                CarSaleTemplates.RELEASED_FIRST_SECTION_END));
         LEGACY_TEMPLATES.put("second-section-end.txt", List.of(CarSaleTemplates.PREVIOUS_SECOND_SECTION_END));
+        LEGACY_TEMPLATES.put("legal-authentic.txt", List.of(CarSaleTemplates.RELEASED_LEGAL_AUTHENTIC));
     }
 
     private final ApplicationDirectories directories;
