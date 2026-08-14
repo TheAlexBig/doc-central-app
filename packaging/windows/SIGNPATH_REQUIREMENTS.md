@@ -75,8 +75,10 @@ clearer through published releases and project metadata.
 - The release MUST include a SHA-256 checksum.
 - The release MUST identify both the backend and frontend source revisions.
 
-Current status: **Blocked**. No published GitHub Release is currently visible
-in the backend repository.
+Current status: **Satisfied**. Version `v1.0.3` is publicly available with its
+MSI, SHA-256 checksum, source revisions, build run, installation warning, and
+verification notes:
+<https://github.com/TheAlexBig/doc-central-app/releases/tag/v1.0.3>.
 
 ### R4. Privacy and end-user behavior
 
@@ -99,10 +101,10 @@ The privacy inventory MUST cover at least:
 - application configuration;
 - diagnostic and startup logs.
 
-Current status: **Partially satisfied**. The app operates locally and the MSI
-supports uninstallation, but a complete public privacy policy is missing. The
-frontend README statement that it does not store submitted personal data must
-be reconciled with the desktop application's local persistence.
+Current status: **Satisfied in repository**. `PRIVACY.md` documents local
+persistence and network behavior, both READMEs link to the policy, the
+frontend storage statement was corrected, and private vulnerability reporting
+is enabled in both GitHub repositories.
 
 ### R5. Code signing policy and roles
 
