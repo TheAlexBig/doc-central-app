@@ -38,10 +38,10 @@ class CarSaleDocumentServiceTests {
     @Test
     void createsVehicleSaleDocumentWithBothSignaturesAndCorrectGenderTitles() throws Exception {
         PersonDetails seller = new PersonDetails(
-                "Maria", "Lopez", "San Salvador", "San Salvador", "00000000-0",
+                "  Maria  ", "  De   Lopez  ", "San Salvador", "San Salvador", "00000000-0",
                 "Femenino", "35", "Abogada");
         PersonDetails buyer = new PersonDetails(
-                "Carla", "Perez", "La Libertad", "Santa Tecla", "11111111-1",
+                "  Carla ", " Perez  ", "La Libertad", "Santa Tecla", "11111111-1",
                 "Femenino", "30", "Ingeniera");
         var request = new CarSaleDocumentRequest(
                 seller,
@@ -50,7 +50,7 @@ class CarSaleDocumentServiceTests {
                         "Propiedad", "Automóvil", "Sedán", "MOTOR1", "CHASIS1", "VIN1"),
                 new DocumentDetails("Propiedad", "", "DIEZ MIL", "Santa Tecla",
                         "La Libertad", "26 de mayo de 2026", "diez horas", "No", "Si"),
-                new LegalAgentDetails("Ana", "Notaria", "La Libertad", "Santa Tecla", "Femenino", "Notario"));
+            new LegalAgentDetails(" Ana  Maria ", " Notaria ", "La Libertad", "Santa Tecla", "Femenino", "Notario"));
 
         byte[] bytes = service.createDocument(request);
 
@@ -69,12 +69,13 @@ class CarSaleDocumentServiceTests {
                     .contains("LA VENDEDORA")
                     .contains("LA COMPRADORA")
                     .contains("NOTARIA")
-                    .contains("MARIA LOPEZ")
+                    .contains("MARIA DE LOPEZ")
                     .contains("CARLA PEREZ")
-                    .contains("ANA NOTARIA")
-                    .doesNotContain("Maria Lopez")
+                    .contains("ANA MARIA NOTARIA")
+                    .doesNotContain("  MARIA")
+                    .doesNotContain("DE   LOPEZ")
                     .doesNotContain("Carla Perez")
-                    .doesNotContain("Ana Notaria")
+                    .doesNotContain("ANA  MARIA")
                     .contains("la primera de las personas comparecientes es dueña y actual poseedora")
                     .contains("la primera vende a la segunda")
                     .contains("la compradora acepta")
@@ -99,7 +100,7 @@ class CarSaleDocumentServiceTests {
                     .doesNotContain(":nit");
             assertThat(tableText)
                     .contains("CARLA PEREZ")
-                    .contains("MARIA LOPEZ");
+                    .contains("MARIA DE LOPEZ");
         }
     }
 }

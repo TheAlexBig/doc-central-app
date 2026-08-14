@@ -174,7 +174,9 @@ final class CarSaleDocumentAssembler {
     }
 
     private String uppercaseName(String name) {
-        return name.toUpperCase(Locale.forLanguageTag("es-SV"));
+        return name.trim()
+                .replaceAll("\\s+", " ")
+                .toUpperCase(Locale.forLanguageTag("es-SV"));
     }
 
     private String fullName(PersonDetails person) {
