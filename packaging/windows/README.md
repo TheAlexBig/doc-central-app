@@ -97,4 +97,7 @@ The build performs these steps:
 
 The resulting MSI is written beneath `target\installer`. It includes its Java
 runtime, creates Start Menu and desktop shortcuts, and uses a stable upgrade
-UUID so later installer versions can replace earlier ones cleanly.
+UUID so later installer versions can replace earlier ones cleanly. During an
+upgrade, the MSI asks the running `Central Docs.exe` process to close, waits up
+to ten seconds, and terminates it only if it does not exit. User data beneath
+`%LOCALAPPDATA%\Central Docs` is not removed.

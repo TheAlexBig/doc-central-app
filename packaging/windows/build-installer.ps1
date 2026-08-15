@@ -12,6 +12,7 @@ $TargetDirectory = Join-Path $BackendDirectory "target"
 $InputDirectory = Join-Path $TargetDirectory "jpackage-input"
 $InstallerDirectory = Join-Path $TargetDirectory "installer"
 $IconPath = Join-Path $TargetDirectory "central-docs.ico"
+$JpackageResourceDirectory = Join-Path $PSScriptRoot "resources"
 
 function New-CentralDocsIcon {
     param([string]$Destination)
@@ -108,6 +109,7 @@ New-CentralDocsIcon -Destination $IconPath
     --main-class "org.springframework.boot.loader.launch.JarLauncher" `
     --arguments "--spring.profiles.active=desktop" `
     --java-options "-Dfile.encoding=UTF-8" `
+    --resource-dir $JpackageResourceDirectory `
     --icon $IconPath `
     --win-menu `
     --win-menu-group "Central Docs" `
