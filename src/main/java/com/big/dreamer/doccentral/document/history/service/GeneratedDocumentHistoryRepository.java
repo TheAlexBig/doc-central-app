@@ -66,10 +66,12 @@ public class GeneratedDocumentHistoryRepository {
                 CAR_SALE_TYPE,
                 fileName,
                 createdAt,
-                title(document),
-                fullName(document.buyer().givenName(), document.buyer().lastName()),
-                fullName(document.seller().givenName(), document.seller().lastName()),
-                vehicleName(document),
+                title(document, draft),
+                personName(draft, "personStates",
+                        fullName(document.buyer().givenName(), document.buyer().lastName())),
+                personName(draft, "vendorStates",
+                        fullName(document.seller().givenName(), document.seller().lastName())),
+                vehicleName(document, draft),
                 document,
                 draft == null ? Map.of() : draft);
 
@@ -87,15 +89,36 @@ public class GeneratedDocumentHistoryRepository {
                 .toList();
     }
 
-    private String title(CarSaleDocumentRequest document) {
-        return "Compra venta - " + vehicleName(document);
+    private String title(CarSaleDocumentRequest document, Map<String, Object> draft) {
+        return "Compra venta - " + vehicleName(document, draft);
     }
 
-    private String vehicleName(CarSaleDocumentRequest document) {
+    private String vehicleName(CarSaleDocumentRequest document, Map<String, Object> draft) {
         return String.join(" ",
-                document.vehicle().brand(),
-                document.vehicle().model(),
-                document.vehicle().licensePlate()).trim();
+                draftValue(draft, "carStates", "marca", document.vehicle().brand()),
+                draftValue(draft, "carStates", "modelo", document.vehicle().model()),
+                draftValue(draft, "carStates", "placa", document.vehicle().licensePlate())).trim();
+    }
+
+    private String personName(Map<String, Object> draft, String section, String fallback) {
+        String givenName = draftValue(draft, section, "nombre", "");
+        String lastName = draftValue(draft, section, "apellido", "");
+        String name = fullName(givenName, lastName);
+        return name.isBlank() ? fallback : name;
+    }
+
+    private String draftValue(
+            Map<String, Object> draft,
+            String section,
+            String field,
+            String fallback) {
+        if (draft != null && draft.get(section) instanceof Map<?, ?> values) {
+            Object value = values.get(field);
+            if (value != null && !value.toString().isBlank()) {
+                return value.toString().trim();
+            }
+        }
+        return fallback;
     }
 
     private String fullName(String givenName, String lastName) {

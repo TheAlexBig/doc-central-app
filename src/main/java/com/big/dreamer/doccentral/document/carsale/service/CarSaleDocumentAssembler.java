@@ -136,6 +136,7 @@ final class CarSaleDocumentAssembler {
                 ? ""
                 : "con " + details.institution();
         populated = replaceFirst(populated, ":institution", institution);
+        populated = normalizePunctuation(populated);
         populated = replaceAll(populated, ":sellerOrdinal", ordinal(seller, true));
         populated = replaceAll(populated, ":buyerOrdinal", ordinal(buyer, false));
         populated = replaceAll(populated, ":buyerRole", gendered(buyer, "el comprador", "la compradora"));
@@ -153,6 +154,12 @@ final class CarSaleDocumentAssembler {
         populated = replaceFirst(populated, ":settlement", details.settlement());
         populated = replaceFirst(populated, ":state", details.state());
         return replaceFirst(populated, ":signDate", details.signDate());
+    }
+
+    private String normalizePunctuation(String text) {
+        return text
+                .replaceAll("\\s+,\\s*\\.", ".")
+                .replaceAll("\\s+([,.;])", "$1");
     }
 
     private String populateLegalAgent(String template, LegalAgentDetails agent, DocumentDetails details) {

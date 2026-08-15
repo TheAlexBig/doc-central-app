@@ -69,7 +69,7 @@ class CarSaleDocumentControllerTests {
                 .singleElement()
                 .satisfies(metadata -> {
                     assertThat(metadata.id()).isEqualTo(historyId);
-                    assertThat(metadata.title()).isEqualTo("Compra venta - Toyota Corolla P-123");
+                    assertThat(metadata.title()).isEqualTo("Compra venta - Toyota Corolla C-987654");
                     assertThat(metadata.buyerName()).isEqualTo("Carlos Perez");
                     assertThat(metadata.sellerName()).isEqualTo("Maria Lopez");
                 });
