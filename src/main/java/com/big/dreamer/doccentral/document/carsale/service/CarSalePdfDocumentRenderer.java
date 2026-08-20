@@ -61,16 +61,29 @@ final class CarSalePdfDocumentRenderer {
         }
 
         private void writeParagraph(String text) throws IOException {
-            for (String line : wrap(text, PDRectangle.LETTER.getWidth() - (MARGIN * 2))) {
+            float maxWidth = PDRectangle.LETTER.getWidth() - (MARGIN * 2);
+            List<String> lines = wrap(text, maxWidth);
+            for (int index = 0; index < lines.size(); index++) {
+                String line = lines.get(index);
                 ensureSpace(LINE_HEIGHT);
-                content.beginText();
-                content.setFont(font, FONT_SIZE);
-                content.newLineAtOffset(MARGIN, y);
-                content.showText(line);
-                content.endText();
+                writeParagraphLine(line, maxWidth, index == lines.size() - 1);
                 y -= LINE_HEIGHT;
             }
             y -= LINE_HEIGHT;
+        }
+
+        private void writeParagraphLine(String line, float maxWidth, boolean lastLine) throws IOException {
+            int spaces = Math.max(0, line.split(" ").length - 1);
+            float lineWidth = font.getStringWidth(line) / 1000 * FONT_SIZE;
+            float wordSpacing = !lastLine && spaces > 0
+                    ? (maxWidth - lineWidth) / spaces
+                    : 0;
+            content.beginText();
+            content.setFont(font, FONT_SIZE);
+            content.setWordSpacing(wordSpacing);
+            content.newLineAtOffset(MARGIN, y);
+            content.showText(line);
+            content.endText();
         }
 
         private void writeSignatures(

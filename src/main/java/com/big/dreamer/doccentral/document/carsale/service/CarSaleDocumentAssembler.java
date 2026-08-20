@@ -55,7 +55,7 @@ final class CarSaleDocumentAssembler {
         String authenticCar = populateCar(
                 templates.carAuthentic(), request.vehicle(), request.seller());
         String authenticTerms = populateDocument(
-                templates.document() + templates.secondSectionEnd(),
+                templates.documentAuthentic() + templates.secondSectionEnd(),
                 request.document(), request.seller(), request.buyer());
         return new CarSaleDocumentSections(
                 declarationPeople + declarationCar + declarationTerms,
@@ -85,6 +85,7 @@ final class CarSaleDocumentAssembler {
 
     private String populateCar(String template, CarDetails car, PersonDetails seller) {
         String populated = replaceAll(template, ":sellerOrdinal", ordinal(seller, true));
+        populated = replaceAll(populated, ":sellerRole", gendered(seller, "el vendedor", "la vendedora"));
         populated = replaceAll(populated, ":sellerOwner", gendered(seller, "dueño", "dueña"));
         populated = replaceAll(populated, ":sellerHolder", gendered(seller, "poseedor", "poseedora"));
         populated = replaceFirst(populated, ":licensePlate", car.licensePlate());
@@ -139,21 +140,25 @@ final class CarSaleDocumentAssembler {
         populated = normalizePunctuation(populated);
         populated = replaceAll(populated, ":sellerOrdinal", ordinal(seller, true));
         populated = replaceAll(populated, ":buyerOrdinal", ordinal(buyer, false));
+        populated = replaceAll(populated, ":buyerRoleCapitalized", gendered(buyer, "El comprador", "La compradora"));
         populated = replaceAll(populated, ":buyerRole", gendered(buyer, "el comprador", "la compradora"));
         populated = replaceAll(populated, ":buyerReceived", gendered(buyer, "recibido", "recibida"));
         populated = replaceAll(populated, ":sellerRole", gendered(seller, "el vendedor", "la vendedora"));
-        populated = replaceAll(populated, ":bothContracting",
+        String bothContracting =
                 isFemale(seller.gender()) && isFemale(buyer.gender())
                         ? "ambas contratantes"
-                        : "ambos contratantes");
+                        : "ambos contratantes";
+        populated = replaceAll(populated, ":bothContractingCapitalized",
+                capitalize(bothContracting));
+        populated = replaceAll(populated, ":bothContracting", bothContracting);
         populated = replaceAll(populated, ":appearingParties",
                 isFemale(seller.gender()) && isFemale(buyer.gender())
                         ? "las comparecientes"
                         : "los comparecientes");
         populated = replaceFirst(populated, ":price", details.price());
-        populated = replaceFirst(populated, ":settlement", details.settlement());
-        populated = replaceFirst(populated, ":state", details.state());
-        return replaceFirst(populated, ":signDate", details.signDate());
+        populated = replaceAll(populated, ":settlement", details.settlement());
+        populated = replaceAll(populated, ":state", details.state());
+        return replaceAll(populated, ":signDate", details.signDate());
     }
 
     private String normalizePunctuation(String text) {
@@ -203,6 +208,10 @@ final class CarSaleDocumentAssembler {
 
     private String gendered(PersonDetails person, String masculine, String feminine) {
         return isFemale(person.gender()) ? feminine : masculine;
+    }
+
+    private String capitalize(String value) {
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
     private String uppercaseName(String name) {

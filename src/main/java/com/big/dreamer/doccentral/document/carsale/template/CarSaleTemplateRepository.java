@@ -25,21 +25,30 @@ public class CarSaleTemplateRepository {
         DEFAULT_TEMPLATES.put("car-document.txt", CarSaleTemplates.CAR_DOCUMENT);
         DEFAULT_TEMPLATES.put("car-authentic.txt", CarSaleTemplates.CAR_AUTHENTIC);
         DEFAULT_TEMPLATES.put("document.txt", CarSaleTemplates.DOCUMENT);
+        DEFAULT_TEMPLATES.put("document-authentic.txt", CarSaleTemplates.DOCUMENT_AUTHENTIC);
         DEFAULT_TEMPLATES.put("first-section-end.txt", CarSaleTemplates.FIRST_SECTION_END);
         DEFAULT_TEMPLATES.put("second-section-end.txt", CarSaleTemplates.SECOND_SECTION_END);
         DEFAULT_TEMPLATES.put("legal-authentic.txt", CarSaleTemplates.LEGAL_AUTHENTIC);
 
-        LEGACY_TEMPLATES.put("people-document.txt", List.of(CarSaleTemplates.LEGACY_PEOPLE_DOCUMENT));
-        LEGACY_TEMPLATES.put("people-authentic.txt", List.of(CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC));
+        LEGACY_TEMPLATES.put("people-document.txt", List.of(
+                CarSaleTemplates.LEGACY_PEOPLE_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_PEOPLE_DOCUMENT));
+        LEGACY_TEMPLATES.put("people-authentic.txt", List.of(
+                CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC,
+                CarSaleTemplates.PREVIOUS_PEOPLE_AUTHENTIC));
         LEGACY_TEMPLATES.put("car-document.txt", List.of(
                 CarSaleTemplates.RELEASED_CAR_DOCUMENT,
-                CarSaleTemplates.PREVIOUS_CAR_DOCUMENT));
+                CarSaleTemplates.PREVIOUS_CAR_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_CURRENT_CAR_DOCUMENT));
         LEGACY_TEMPLATES.put("car-authentic.txt", List.of(
                 CarSaleTemplates.RELEASED_CAR_AUTHENTIC,
-                CarSaleTemplates.PREVIOUS_CAR_AUTHENTIC));
+                CarSaleTemplates.PREVIOUS_CAR_AUTHENTIC,
+                CarSaleTemplates.PREVIOUS_CURRENT_CAR_AUTHENTIC));
         LEGACY_TEMPLATES.put("document.txt", List.of(
                 CarSaleTemplates.LEGACY_DOCUMENT,
-                CarSaleTemplates.PREVIOUS_DOCUMENT));
+                CarSaleTemplates.PREVIOUS_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_CURRENT_DOCUMENT,
+                CarSaleTemplates.PREVIOUS_DOCUMENT_WITHOUT_DEADLINE));
         LEGACY_TEMPLATES.put("first-section-end.txt", List.of(
                 CarSaleTemplates.PREVIOUS_FIRST_SECTION_END,
                 CarSaleTemplates.RELEASED_FIRST_SECTION_END));
@@ -90,6 +99,7 @@ public class CarSaleTemplateRepository {
                     read("car-document.txt"),
                     read("car-authentic.txt"),
                     read("document.txt"),
+                    read("document-authentic.txt"),
                     read("first-section-end.txt"),
                     read("second-section-end.txt"),
                     read("legal-authentic.txt"));
@@ -108,6 +118,7 @@ public class CarSaleTemplateRepository {
             String carDocument,
             String carAuthentic,
             String document,
+            String documentAuthentic,
             String firstSectionEnd,
             String secondSectionEnd,
             String legalAuthentic) {
