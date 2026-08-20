@@ -12,6 +12,7 @@ import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationReques
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
+import com.big.dreamer.doccentral.license.service.LicenseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class CarSaleDocumentControllerTests {
 
@@ -46,7 +48,8 @@ class CarSaleDocumentControllerTests {
         GeneratedDocumentStorage documentStorage = new GeneratedDocumentStorage(directories);
         historyRepository = new GeneratedDocumentHistoryRepository(directories, new ObjectMapper());
         historyRepository.initialize();
-        documentController = new CarSaleDocumentController(documentService, documentStorage, historyRepository);
+        documentController = new CarSaleDocumentController(
+                documentService, documentStorage, historyRepository, mock(LicenseService.class));
         historyController = new DocumentHistoryController(historyRepository, documentStorage, documentService);
     }
 

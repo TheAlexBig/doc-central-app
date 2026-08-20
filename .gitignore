@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### License secrets and issued licenses ###
+license-private-key.pem
+*.license

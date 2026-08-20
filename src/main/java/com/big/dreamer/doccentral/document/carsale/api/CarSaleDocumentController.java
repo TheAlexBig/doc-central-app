@@ -7,6 +7,7 @@ import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationReques
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
+import com.big.dreamer.doccentral.license.service.LicenseService;
 import jakarta.validation.Valid;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -40,20 +41,24 @@ public class CarSaleDocumentController {
     private final CarSaleDocumentService documentService;
     private final GeneratedDocumentStorage documentStorage;
     private final GeneratedDocumentHistoryRepository historyRepository;
+    private final LicenseService licenseService;
 
     public CarSaleDocumentController(
             CarSaleDocumentService documentService,
             GeneratedDocumentStorage documentStorage,
-            GeneratedDocumentHistoryRepository historyRepository) {
+            GeneratedDocumentHistoryRepository historyRepository,
+            LicenseService licenseService) {
         this.documentService = documentService;
         this.documentStorage = documentStorage;
         this.historyRepository = historyRepository;
+        this.licenseService = licenseService;
     }
 
     @PostMapping(value = "/car-sale")
     public ResponseEntity<byte[]> generateCarSaleDocument(
             @Valid @RequestBody CarSaleDocumentRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
+        licenseService.requireActive();
         DocumentResponse document = createDocumentResponse(
                 request, Instant.now(), DocumentFormat.from(format), request.vehicle().licensePlate());
         return fileResponse(document.fileName(), document.contents(), document.contentType(), null);
@@ -63,6 +68,7 @@ public class CarSaleDocumentController {
     public ResponseEntity<byte[]> generateTrackedCarSaleDocument(
             @Valid @RequestBody CarSaleGenerationRequest request,
             @RequestParam(defaultValue = WORD_FORMAT) String format) {
+        licenseService.requireActive();
         Instant createdAt = Instant.now();
         DocumentResponse document = createDocumentResponse(
                 request.document(), createdAt, DocumentFormat.from(format), draftLicensePlate(request));

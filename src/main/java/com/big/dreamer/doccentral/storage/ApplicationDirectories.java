@@ -40,6 +40,16 @@ public class ApplicationDirectories {
         return documentsDirectory;
     }
 
+    public Path licenseFile() {
+        return dataDirectory.resolve("license.json");
+    }
+
+    public Path licenseReceiptFile() {
+        Path centralDocsDirectory = documentsDirectory.getParent();
+        return (centralDocsDirectory == null ? documentsDirectory : centralDocsDirectory)
+                .resolve("license.json");
+    }
+
     public Path agentsFile() {
         return dataDirectory.resolve("agents.json");
     }

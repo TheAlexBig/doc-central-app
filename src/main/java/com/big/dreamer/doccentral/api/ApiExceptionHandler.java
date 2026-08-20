@@ -4,6 +4,7 @@ import com.big.dreamer.doccentral.agent.service.AgentStorageException;
 import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
 import com.big.dreamer.doccentral.document.history.service.DocumentHistoryStorageException;
 import com.big.dreamer.doccentral.person.service.PersonStorageException;
+import com.big.dreamer.doccentral.license.service.LicenseException;
 import com.big.dreamer.doccentral.vehicle.service.VehicleStorageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,11 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleGenerationFailure() {
         return response(HttpStatus.INTERNAL_SERVER_ERROR,
                 "The document could not be generated.", Map.of());
+    }
+
+    @ExceptionHandler(LicenseException.class)
+    public ResponseEntity<ApiError> handleLicenseFailure(LicenseException exception) {
+        return response(HttpStatus.FORBIDDEN, exception.getMessage(), Map.of());
     }
 
     @ExceptionHandler(DocumentHistoryStorageException.class)
