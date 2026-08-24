@@ -4,6 +4,7 @@ import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
+import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -41,9 +42,8 @@ public class GeneratedDocumentHistoryRepository {
 
     public synchronized List<GeneratedDocumentMetadata> findAll() {
         try {
-            GeneratedDocumentMetadata[] documents = objectMapper.readValue(
-                    Files.readString(historyFile, StandardCharsets.UTF_8),
-                    GeneratedDocumentMetadata[].class);
+            GeneratedDocumentMetadata[] documents = RecoverableJsonFileReader.read(
+                    historyFile, objectMapper, GeneratedDocumentMetadata[].class);
             return sortByMostRecent(List.of(documents));
         } catch (IOException exception) {
             throw new DocumentHistoryStorageException("Unable to read generated document history.", exception);

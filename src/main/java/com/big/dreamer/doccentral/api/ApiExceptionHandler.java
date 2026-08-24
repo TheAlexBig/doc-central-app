@@ -6,6 +6,7 @@ import com.big.dreamer.doccentral.document.history.service.DocumentHistoryStorag
 import com.big.dreamer.doccentral.person.service.PersonStorageException;
 import com.big.dreamer.doccentral.license.service.LicenseException;
 import com.big.dreamer.doccentral.vehicle.service.VehicleStorageException;
+import com.big.dreamer.doccentral.storage.StorageBackupException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -98,6 +99,11 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleVehicleStorageFailure() {
         return response(HttpStatus.INTERNAL_SERVER_ERROR,
                 "The locally saved vehicles could not be accessed.", Map.of());
+    }
+
+    @ExceptionHandler(StorageBackupException.class)
+    public ResponseEntity<ApiError> handleBackupFailure(StorageBackupException exception) {
+        return response(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
     }
 
     private ResponseEntity<ApiError> response(HttpStatus status, String message, Map<String, String> fields) {

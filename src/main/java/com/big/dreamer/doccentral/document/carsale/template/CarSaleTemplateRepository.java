@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.document.carsale.template;
 
 import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
@@ -12,9 +13,14 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.regex.Pattern;
 
 @Component
 public class CarSaleTemplateRepository {
+
+    private static final Pattern PLACEHOLDER = Pattern.compile(":([A-Za-z][A-Za-z0-9]*)");
 
     private static final Map<String, String> DEFAULT_TEMPLATES = new LinkedHashMap<>();
     private static final Map<String, List<String>> LEGACY_TEMPLATES = new LinkedHashMap<>();
@@ -105,6 +111,58 @@ public class CarSaleTemplateRepository {
                     read("legal-authentic.txt"));
         } catch (IOException exception) {
             throw new DocumentGenerationException("Unable to read local templates.", exception);
+        }
+    }
+
+    public synchronized Map<String, String> findAll() {
+        LinkedHashMap<String, String> templates = new LinkedHashMap<>();
+        DEFAULT_TEMPLATES.keySet().forEach(name -> {
+            try {
+                templates.put(name, read(name));
+            } catch (IOException exception) {
+                throw new DocumentGenerationException("Unable to read local templates.", exception);
+            }
+        });
+        return templates;
+    }
+
+    public synchronized String save(String fileName, String content) {
+        requireKnown(fileName);
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("La plantilla no puede estar vacía.");
+        }
+        Set<String> missing = new LinkedHashSet<>(placeholders(DEFAULT_TEMPLATES.get(fileName)));
+        missing.removeAll(placeholders(content));
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException("Faltan variables obligatorias: " + String.join(", ", missing));
+        }
+        try {
+            LocalJsonFileWriter.write(directories.templatesDirectory().resolve(fileName), content);
+            return content;
+        } catch (IOException exception) {
+            throw new DocumentGenerationException("Unable to save local template.", exception);
+        }
+    }
+
+    public synchronized String reset(String fileName) {
+        requireKnown(fileName);
+        return save(fileName, DEFAULT_TEMPLATES.get(fileName));
+    }
+
+    public Map<String, String> defaults() {
+        return Map.copyOf(DEFAULT_TEMPLATES);
+    }
+
+    public Set<String> placeholders(String content) {
+        LinkedHashSet<String> values = new LinkedHashSet<>();
+        var matcher = PLACEHOLDER.matcher(content == null ? "" : content);
+        while (matcher.find()) values.add(":" + matcher.group(1));
+        return values;
+    }
+
+    private void requireKnown(String fileName) {
+        if (!DEFAULT_TEMPLATES.containsKey(fileName)) {
+            throw new IllegalArgumentException("Plantilla desconocida.");
         }
     }
 

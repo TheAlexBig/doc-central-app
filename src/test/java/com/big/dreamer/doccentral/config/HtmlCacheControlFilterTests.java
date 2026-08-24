@@ -13,12 +13,13 @@ class HtmlCacheControlFilterTests {
 
     @Test
     void preventsCachingApplicationHtml() throws Exception {
-        MockHttpServletResponse response = filter("/compra-venta");
-
-        assertThat(response.getHeader("Cache-Control"))
-                .isEqualTo("no-store, no-cache, must-revalidate, max-age=0");
-        assertThat(response.getHeader("Pragma")).isEqualTo("no-cache");
-        assertThat(response.getDateHeader("Expires")).isZero();
+        for (String path : new String[]{"/compra-venta", "/historial", "/configuracion"}) {
+            MockHttpServletResponse response = filter(path);
+            assertThat(response.getHeader("Cache-Control"))
+                    .isEqualTo("no-store, no-cache, must-revalidate, max-age=0");
+            assertThat(response.getHeader("Pragma")).isEqualTo("no-cache");
+            assertThat(response.getDateHeader("Expires")).isZero();
+        }
     }
 
     @Test

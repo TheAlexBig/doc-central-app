@@ -36,6 +36,10 @@ public class ApplicationDirectories {
         return dataDirectory.resolve("templates").resolve("car-sale");
     }
 
+    public Path dataDirectory() {
+        return dataDirectory;
+    }
+
     public Path documentsDirectory() {
         return documentsDirectory;
     }

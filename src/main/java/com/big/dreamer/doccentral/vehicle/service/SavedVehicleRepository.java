@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.vehicle.service;
 
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
+import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
 import com.big.dreamer.doccentral.vehicle.model.VehicleOptionExclusions;
 import com.big.dreamer.doccentral.vehicle.model.SavedVehicle;
 import com.big.dreamer.doccentral.vehicle.model.VehicleOptions;
@@ -47,9 +48,8 @@ public class SavedVehicleRepository {
 
     public synchronized List<SavedVehicle> findAll() {
         try {
-            SavedVehicle[] vehicles = objectMapper.readValue(
-                    Files.readString(vehiclesFile, StandardCharsets.UTF_8),
-                    SavedVehicle[].class);
+            SavedVehicle[] vehicles = RecoverableJsonFileReader.read(
+                    vehiclesFile, objectMapper, SavedVehicle[].class);
             return sortByMostRecent(List.of(vehicles));
         } catch (IOException exception) {
             throw new VehicleStorageException("Unable to read local vehicles.", exception);
@@ -187,9 +187,8 @@ public class SavedVehicleRepository {
 
     private VehicleOptionExclusions findExclusions() {
         try {
-            return objectMapper.readValue(
-                    Files.readString(optionExclusionsFile, StandardCharsets.UTF_8),
-                    VehicleOptionExclusions.class);
+            return RecoverableJsonFileReader.read(
+                    optionExclusionsFile, objectMapper, VehicleOptionExclusions.class);
         } catch (IOException exception) {
             throw new VehicleStorageException("Unable to read local vehicle option settings.", exception);
         }

@@ -30,6 +30,8 @@ public class HtmlCacheControlFilter extends OncePerRequestFilter {
     private boolean isApplicationPage(String requestUri) {
         return "/".equals(requestUri)
                 || "/index.html".equals(requestUri)
-                || "/compra-venta".equals(requestUri);
+                || "/compra-venta".equals(requestUri)
+                || "/historial".equals(requestUri)
+                || "/configuracion".equals(requestUri);
     }
 }

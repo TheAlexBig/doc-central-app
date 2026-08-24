@@ -76,6 +76,41 @@ Saved legal agents are added, edited, and removed in the application through
 the notary selection step. The local JSON file begins empty and is not bundled
 with personal data.
 
+## Local maintenance
+
+The **Configuración** tab provides operational maintenance without requiring
+access to the filesystem:
+
+- export and restore a portable ZIP backup of saved data, templates, history,
+  and generated documents;
+- search, edit, and remove saved people;
+- edit car-sale templates with required-placeholder validation and restore the
+  bundled defaults; and
+- display the installed version and check GitHub for a newer release.
+
+Document history can be filtered by dates, document type, names, DUI, vehicle,
+plate, or legal agent. In-progress car-sale forms are saved automatically in
+the local browser profile and recovered after an accidental close.
+
+The diagnostics section can export a support ZIP containing only application
+version, platform details, and sanitized logs. It excludes licenses, generated
+documents, templates, and saved customer data, and redacts common identifiers
+from log text.
+
+Licenses are deliberately excluded from backups and remain tied to their
+original installation. Before replacing a JSON data file, Central Docs keeps
+up to 25 local backups. If the active file becomes unreadable, the newest valid
+backup is restored automatically and the damaged file is retained with a
+`.corrupt-<timestamp>` suffix for diagnosis.
+
+History and configuration are global application areas available at
+`/historial` and `/configuracion`; they are not nested inside a specific
+document workflow. Saved people, agents, and vehicle suggestions are managed
+from the global data view. Car-sale template text is presented as an ordered
+set of blocks whose combination produces the final document.
+The logs-folder action supports the Windows desktop API, `open` on macOS, and
+`xdg-open` when running the backend from a Linux desktop.
+
 ## Windows Installer
 
 Oracle `jpackage` builds native packages only on their target platform, so a

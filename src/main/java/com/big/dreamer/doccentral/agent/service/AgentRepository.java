@@ -3,6 +3,7 @@ package com.big.dreamer.doccentral.agent.service;
 import com.big.dreamer.doccentral.agent.model.Agent;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
+import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -36,7 +37,7 @@ public class AgentRepository {
 
     public synchronized List<Agent> findAll() {
         try {
-            Agent[] agents = objectMapper.readValue(Files.readString(agentsFile, StandardCharsets.UTF_8), Agent[].class);
+            Agent[] agents = RecoverableJsonFileReader.read(agentsFile, objectMapper, Agent[].class);
             return List.of(agents);
         } catch (IOException exception) {
             throw new AgentStorageException("Unable to read local agents.", exception);

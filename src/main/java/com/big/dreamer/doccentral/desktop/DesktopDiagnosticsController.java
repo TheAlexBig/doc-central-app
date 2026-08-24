@@ -2,6 +2,9 @@ package com.big.dreamer.doccentral.desktop;
 
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +27,11 @@ public class DesktopDiagnosticsController {
     private static final String STARTUP_FAILURE_LOG_FILE_NAME = "startup-failure.log";
 
     private final ApplicationDirectories directories;
+    private final SupportPackageService supportPackageService;
 
-    public DesktopDiagnosticsController(ApplicationDirectories directories) {
+    public DesktopDiagnosticsController(ApplicationDirectories directories, SupportPackageService supportPackageService) {
         this.directories = directories;
+        this.supportPackageService = supportPackageService;
     }
 
     @GetMapping
@@ -51,6 +56,15 @@ public class DesktopDiagnosticsController {
         }
     }
 
+    @GetMapping("/support-package")
+    public ResponseEntity<byte[]> supportPackage() {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename("central-docs-support.zip").build().toString())
+                .body(supportPackageService.create());
+    }
+
     private Path logsDirectory() {
         return UserDataLocations.applicationDataDirectory().resolve("logs");
     }
@@ -60,8 +74,17 @@ public class DesktopDiagnosticsController {
             Desktop.getDesktop().open(directory.toFile());
             return;
         }
-        if (System.getProperty("os.name", "").toLowerCase().contains("win")) {
+        String operatingSystem = System.getProperty("os.name", "").toLowerCase();
+        if (operatingSystem.contains("win")) {
             new ProcessBuilder("explorer.exe", directory.toString()).start();
+            return;
+        }
+        if (operatingSystem.contains("mac")) {
+            new ProcessBuilder("open", directory.toString()).start();
+            return;
+        }
+        if (operatingSystem.contains("linux") || operatingSystem.contains("unix")) {
+            new ProcessBuilder("xdg-open", directory.toString()).start();
             return;
         }
         throw new IOException("No folder launcher is available.");

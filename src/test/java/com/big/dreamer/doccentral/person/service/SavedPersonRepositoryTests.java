@@ -55,4 +55,20 @@ class SavedPersonRepositoryTests {
         assertThat(repository.findAll()).containsExactly(updated);
         assertThat(repository.findOccupations()).containsExactly("Abogada");
     }
+
+    @Test
+    void updatesAPersonAndAllowsChangingDui() {
+        SavedPerson original = repository.save(new SavedPerson(null, "Ana", "Lopez", "San Salvador",
+                "San Salvador Centro", "San Salvador", "1990-01-01", "00000000-0",
+                "Femenino", "Comerciante", null));
+        SavedPerson changed = new SavedPerson(null, "Ana María", "Lopez", "San Salvador",
+                "San Salvador Centro", "San Salvador", "1990-01-01", "11111111-1",
+                "Femenino", "Comerciante", null);
+
+        SavedPerson updated = repository.update(original.documento(), changed);
+
+        assertThat(updated.id()).isEqualTo("111111111");
+        assertThat(updated.documento()).isEqualTo("11111111-1");
+        assertThat(repository.findAll()).containsExactly(updated);
+    }
 }

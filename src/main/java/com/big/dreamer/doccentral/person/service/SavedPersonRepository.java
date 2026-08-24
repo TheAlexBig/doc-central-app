@@ -3,6 +3,7 @@ package com.big.dreamer.doccentral.person.service;
 import com.big.dreamer.doccentral.person.model.SavedPerson;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
+import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -37,9 +38,7 @@ public class SavedPersonRepository {
 
     public synchronized List<SavedPerson> findAll() {
         try {
-            SavedPerson[] people = objectMapper.readValue(
-                    Files.readString(peopleFile, StandardCharsets.UTF_8),
-                    SavedPerson[].class);
+            SavedPerson[] people = RecoverableJsonFileReader.read(peopleFile, objectMapper, SavedPerson[].class);
             return sortByMostRecent(List.of(people));
         } catch (IOException exception) {
             throw new PersonStorageException("Unable to read local people.", exception);
@@ -76,6 +75,22 @@ public class SavedPersonRepository {
             write(sortByMostRecent(people));
         }
         return removed;
+    }
+
+    public synchronized SavedPerson update(String currentDocumento, SavedPerson submittedPerson) {
+        String currentDui = normalizeDui(currentDocumento);
+        String nextDui = normalizeDui(submittedPerson.documento());
+        List<SavedPerson> people = new ArrayList<>(findAll());
+        boolean exists = people.stream().anyMatch(person -> normalizeDui(person.documento()).equals(currentDui));
+        if (!exists) {
+            return null;
+        }
+        people.removeIf(person -> normalizeDui(person.documento()).equals(currentDui)
+                || normalizeDui(person.documento()).equals(nextDui));
+        SavedPerson saved = submittedPerson.withMemoryFields(nextDui, Instant.now().toString());
+        people.add(0, saved);
+        write(sortByMostRecent(people));
+        return saved;
     }
 
     private List<SavedPerson> sortByMostRecent(List<SavedPerson> people) {

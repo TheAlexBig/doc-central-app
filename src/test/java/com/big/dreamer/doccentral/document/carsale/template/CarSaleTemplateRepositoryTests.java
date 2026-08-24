@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CarSaleTemplateRepositoryTests {
 
@@ -82,5 +83,22 @@ class CarSaleTemplateRepositoryTests {
                 .contains("jurisdicción del distrito de :settlement")
                 .doesNotContain("esta ciudad")
                 .doesNotContain("quince días");
+    }
+
+    @Test
+    void validatesRequiredVariablesAndCanResetTemplate() {
+        ApplicationDirectories directories = new ApplicationDirectories(
+                temporaryDirectory.resolve("editable-data").toString(),
+                temporaryDirectory.resolve("editable-documents").toString());
+        directories.initialize();
+        CarSaleTemplateRepository repository = new CarSaleTemplateRepository(directories);
+        repository.initializeTemplates();
+
+        assertThatThrownBy(() -> repository.save("car-document.txt", "Texto sin variables"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(":licensePlate");
+        String customized = CarSaleTemplates.CAR_DOCUMENT + " Texto personalizado.";
+        assertThat(repository.save("car-document.txt", customized)).isEqualTo(customized);
+        assertThat(repository.reset("car-document.txt")).isEqualTo(CarSaleTemplates.CAR_DOCUMENT);
     }
 }
