@@ -52,7 +52,7 @@ Generated Word files are returned as downloads and are also saved locally.
 ## Offline Desktop Behavior
 
 The installed application starts a local Spring Boot server on
-`http://127.0.0.1:17831`, serves the compiled React application from that
+`http://central-docs.localhost:17831`, serves the compiled React application from that
 process, and opens it in the user's default browser. API requests remain local
 under `/api`. A second application launch checks the running Central Docs
 instance and opens its browser interface instead of starting another server.

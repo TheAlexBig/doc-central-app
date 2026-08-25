@@ -29,7 +29,7 @@ import java.util.List;
 public final class DesktopMode {
 
     public static final int PORT = 17831;
-    public static final URI APPLICATION_URI = URI.create("http://127.0.0.1:" + PORT + "/");
+    public static final URI APPLICATION_URI = URI.create("http://central-docs.localhost:" + PORT + "/");
     private static final URI STATUS_URI = URI.create("http://127.0.0.1:" + PORT + "/api/v1/desktop/status");
     private static final Logger LOGGER = LoggerFactory.getLogger(DesktopMode.class);
     private static final String LOG_FILE_NAME = "central-docs.log";
