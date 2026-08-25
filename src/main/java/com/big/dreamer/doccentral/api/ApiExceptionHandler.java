@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.api;
 
 import com.big.dreamer.doccentral.agent.service.AgentStorageException;
 import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
+import com.big.dreamer.doccentral.document.carsale.service.CarSaleRequestValidationException;
 import com.big.dreamer.doccentral.document.history.service.DocumentHistoryStorageException;
 import com.big.dreamer.doccentral.person.service.PersonStorageException;
 import com.big.dreamer.doccentral.license.service.LicenseException;
@@ -70,6 +71,11 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleGenerationFailure() {
         return response(HttpStatus.INTERNAL_SERVER_ERROR,
                 "The document could not be generated.", Map.of());
+    }
+
+    @ExceptionHandler(CarSaleRequestValidationException.class)
+    public ResponseEntity<ApiError> handleCarSaleValidation(CarSaleRequestValidationException exception) {
+        return response(HttpStatus.BAD_REQUEST, exception.getMessage(), exception.fields());
     }
 
     @ExceptionHandler(LicenseException.class)

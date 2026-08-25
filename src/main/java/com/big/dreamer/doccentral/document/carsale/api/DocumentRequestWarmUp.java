@@ -12,7 +12,7 @@ public class DocumentRequestWarmUp {
     private static final String SAMPLE_REQUEST = """
             {
               "vendedor": {"nombre":"Inicial","apellido":"Vendedor","departamento":"Departamento",
-                "domicilio":"Municipio","documento":"00000000-0",
+                "domicilio":"Municipio","documento":"00000001-9",
                 "genero":"Masculino","edad":"30","oficio":"Oficio"},
               "comprador": {"nombre":"Inicial","apellido":"Comprador","departamento":"Departamento",
                 "domicilio":"Municipio","documento":"00000000-0",

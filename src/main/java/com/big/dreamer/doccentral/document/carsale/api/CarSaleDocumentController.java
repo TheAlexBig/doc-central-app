@@ -3,6 +3,7 @@ package com.big.dreamer.doccentral.document.carsale.api;
 import com.big.dreamer.doccentral.document.DocumentFormat;
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
+import com.big.dreamer.doccentral.document.carsale.service.CarSaleRequestValidator;
 import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationRequest;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
@@ -106,6 +107,7 @@ public class CarSaleDocumentController {
     }
 
     private byte[] createDocument(CarSaleDocumentRequest request, DocumentFormat format) {
+        CarSaleRequestValidator.validate(request);
         return format.isPdf()
                 ? documentService.createPdfDocument(request)
                 : documentService.createDocument(request);
