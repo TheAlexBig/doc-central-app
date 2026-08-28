@@ -101,22 +101,25 @@ final class CarSaleDocumentAssembler {
         populated = replaceFirst(populated, ":domain", car.domain());
         populated = replaceFirst(populated, ":vehicleClass", car.vehicleClass());
         populated = replaceFirst(populated, ":vehicleType", car.vehicleType());
-        populated = replaceFirst(populated, ":heavyTruckDetails", heavyTruckDetails(car));
+        populated = replaceFirst(populated, ":heavyTruckDetails", additionalVehicleDetails(car));
         populated = replaceFirst(populated, ":engineNumber", car.engineNumber());
         populated = replaceFirst(populated, ":chassisNumber", car.chassisNumber());
         return replaceFirst(populated, ":vinNumber", car.vinNumber());
     }
 
-    private String heavyTruckDetails(CarDetails car) {
-        if (!isHeavyTruck(car)) {
-            return "";
+    private String additionalVehicleDetails(CarDetails car) {
+        StringBuilder details = new StringBuilder();
+        if (isHeavyTruck(car)) {
+            details.append("EJES: ").append(value(car.axles()))
+                    .append("; TARA: ").append(value(car.tare()))
+                    .append("; TIPO DE CAPACIDAD: ").append(value(car.capacityType()))
+                    .append("; CAPACIDAD DE CARGA: ").append(value(car.loadCapacity()))
+                    .append("; CAPACIDAD MÁXIMA: ").append(value(car.maximumCapacity())).append("; ");
         }
-        return "EJES: " + value(car.axles())
-                + "; TARA: " + value(car.tare())
-                + "; TIPO DE CAPACIDAD: " + value(car.capacityType())
-                + "; CAPACIDAD DE CARGA: " + value(car.loadCapacity())
-                + "; CAPACIDAD MÁXIMA: " + value(car.maximumCapacity())
-                + "; TRACCIÓN: " + value(car.traction()) + "; ";
+        if (car.traction() != null && !car.traction().isBlank()) {
+            details.append("TRACCIÓN: ").append(car.traction()).append("; ");
+        }
+        return details.toString();
     }
 
     private String value(String value) {
