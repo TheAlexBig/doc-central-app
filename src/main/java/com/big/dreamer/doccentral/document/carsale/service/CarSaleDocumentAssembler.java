@@ -8,6 +8,8 @@ import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class CarSaleDocumentAssembler {
 
@@ -19,6 +21,7 @@ final class CarSaleDocumentAssembler {
     private static final String LEGAL_WOMAN = "NOTARIA";
     private static final String LAWYER_DEFAULT = "ABOGADO";
     private static final String LAWYER_WOMAN = "ABOGADA";
+    private static final Pattern PRICE_WITH_CENTS = Pattern.compile("^(.+?) CON (.+ CENTAVOS)$");
 
     CarSaleDocumentSections createSections(
             CarSaleDocumentRequest request,
@@ -158,7 +161,7 @@ final class CarSaleDocumentAssembler {
                 isFemale(seller.gender()) && isFemale(buyer.gender())
                         ? "las comparecientes"
                         : "los comparecientes");
-        populated = replaceFirst(populated, ":price", details.price());
+        populated = populatePrice(populated, details.price());
         populated = replaceAll(populated, ":settlement", details.settlement());
         populated = replaceAll(populated, ":state", details.state());
         return replaceAll(populated, ":signDate", details.signDate());
@@ -166,8 +169,26 @@ final class CarSaleDocumentAssembler {
 
     private String normalizePunctuation(String text) {
         return text
+                .replace("ESTADOS UNIDOPS", "ESTADOS UNIDOS")
                 .replaceAll("\\s+,\\s*\\.", ".")
                 .replaceAll("\\s+([,.;])", "$1");
+    }
+
+    private String populatePrice(String template, String price) {
+        Matcher matcher = PRICE_WITH_CENTS.matcher(price == null ? "" : price);
+        if (matcher.matches()) {
+            String amount = matcher.group(1)
+                    + " DÓLARES CON "
+                    + matcher.group(2)
+                    + " DE DÓLAR";
+            String populated = template.replaceFirst(
+                    ":price\\s+D[ÓO]LARES",
+                    Matcher.quoteReplacement(amount));
+            if (!populated.equals(template)) {
+                return populated;
+            }
+        }
+        return replaceFirst(template, ":price", price);
     }
 
     private String populateLegalAgent(String template, LegalAgentDetails agent, DocumentDetails details) {

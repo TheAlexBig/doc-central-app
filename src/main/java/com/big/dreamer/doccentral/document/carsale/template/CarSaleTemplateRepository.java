@@ -77,9 +77,7 @@ public class CarSaleTemplateRepository {
                 Path templatePath = templatesDirectory.resolve(template.getKey());
                 if (Files.notExists(templatePath)) {
                     Files.writeString(templatePath, template.getValue(), StandardCharsets.UTF_8);
-                } else if (template.getValue() != null
-                        && template.getValue().equals(DEFAULT_TEMPLATES.get(template.getKey()))
-                        && LEGACY_TEMPLATES.containsKey(template.getKey())) {
+                } else {
                     migrateLegacyTemplate(templatePath, template.getKey());
                 }
             }
@@ -90,10 +88,17 @@ public class CarSaleTemplateRepository {
 
     private void migrateLegacyTemplate(Path templatePath, String fileName) throws IOException {
         String currentTemplate = Files.readString(templatePath, StandardCharsets.UTF_8);
-        String previousDefault = DEFAULT_TEMPLATES.get(fileName).replace(":heavyTruckDetails", "");
-        if (LEGACY_TEMPLATES.get(fileName).contains(currentTemplate)
+        String previousDefault = DEFAULT_TEMPLATES.get(fileName).replace(":heavyTruckDetails ", "");
+        if (LEGACY_TEMPLATES.getOrDefault(fileName, List.of()).contains(currentTemplate)
                 || previousDefault.equals(currentTemplate)) {
             Files.writeString(templatePath, DEFAULT_TEMPLATES.get(fileName), StandardCharsets.UTF_8);
+            return;
+        }
+        String correctedTemplate = currentTemplate
+                .replace(":heavyTruckDetailsNÚMERO", ":heavyTruckDetails NÚMERO")
+                .replace("ESTADOS UNIDOPS", "ESTADOS UNIDOS");
+        if (!correctedTemplate.equals(currentTemplate)) {
+            Files.writeString(templatePath, correctedTemplate, StandardCharsets.UTF_8);
         }
     }
 

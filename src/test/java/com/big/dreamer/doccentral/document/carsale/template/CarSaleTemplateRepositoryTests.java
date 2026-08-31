@@ -46,6 +46,8 @@ class CarSaleTemplateRepositoryTests {
         assertThat(repository.load().carDocument())
                 .isEqualTo(CarSaleTemplates.CAR_DOCUMENT)
                 .contains(":sellerRole")
+                .contains(":heavyTruckDetails NÚMERO")
+                .doesNotContain(":heavyTruckDetailsN")
                 .contains("TIPO: :vehicleType")
                 .doesNotContain("DOMINIO AJENO");
         assertThat(repository.load().peopleAuthentic())
@@ -61,6 +63,31 @@ class CarSaleTemplateRepositoryTests {
                 .isEqualTo(CarSaleTemplates.LEGAL_AUTHENTIC)
                 .contains("En el distrito de")
                 .doesNotContain("En la ciudad de");
+    }
+
+    @Test
+    void repairsPlaceholderBoundariesAndKnownTyposWithoutDiscardingCustomText() throws Exception {
+        ApplicationDirectories directories = new ApplicationDirectories(
+                temporaryDirectory.resolve("repair-data").toString(),
+                temporaryDirectory.resolve("repair-documents").toString());
+        directories.initialize();
+        Files.createDirectories(directories.templatesDirectory());
+        Files.writeString(
+                directories.templatesDirectory().resolve("car-document.txt"),
+                "Texto personalizado :heavyTruckDetailsNÚMERO DE MOTOR: :engineNumber;",
+                StandardCharsets.UTF_8);
+        Files.writeString(
+                directories.templatesDirectory().resolve("document.txt"),
+                "Texto personalizado :price DÓLARES DE LOS ESTADOS UNIDOPS.",
+                StandardCharsets.UTF_8);
+
+        CarSaleTemplateRepository repository = new CarSaleTemplateRepository(directories);
+        repository.initializeTemplates();
+
+        assertThat(repository.load().carDocument())
+                .isEqualTo("Texto personalizado :heavyTruckDetails NÚMERO DE MOTOR: :engineNumber;");
+        assertThat(repository.load().document())
+                .isEqualTo("Texto personalizado :price DÓLARES DE LOS ESTADOS UNIDOS.");
     }
 
     @Test

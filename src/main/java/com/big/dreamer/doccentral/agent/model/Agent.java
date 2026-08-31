@@ -9,7 +9,7 @@ public record Agent(
         @NotBlank String departamento,
         @NotBlank String municipio,
         @NotBlank String distrito,
-        @NotBlank String carnet,
+        String carnet,
         @NotBlank String genero,
         @NotBlank String rol) {
 

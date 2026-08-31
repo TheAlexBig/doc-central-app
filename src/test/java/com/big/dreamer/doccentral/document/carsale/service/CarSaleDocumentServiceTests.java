@@ -49,7 +49,7 @@ class CarSaleDocumentServiceTests {
                 new CarDetails("P-123", "Toyota", "Corolla", "Azul", "2020", "CINCO ASS",
                         "Propiedad", "Automóvil", "Camioneta", null, null, null, null, null,
                         "CUATRO x CUATRO", "MOTOR1", "CHASIS1", "VIN1"),
-                new DocumentDetails("Propiedad", "", "DIEZ MIL", "Santa Tecla",
+                new DocumentDetails("Propiedad", "", "CINCO MIL CON VEINTIDÓS CENTAVOS", "Santa Tecla",
                         "La Libertad", "26 de mayo de 2026", "diez horas", "No", "Si"),
             new LegalAgentDetails(" Ana  Maria ", " Notaria ", "La Libertad", "Santa Tecla", "Femenino", "Notario"));
 
@@ -97,6 +97,9 @@ class CarSaleDocumentServiceTests {
                     .contains("CLASE: Automóvil")
                     .contains("TIPO: Camioneta")
                     .contains("TRACCIÓN: CUATRO x CUATRO")
+                    .contains("CINCO MIL DÓLARES CON VEINTIDÓS CENTAVOS DE DÓLAR DE LOS ESTADOS UNIDOS DE AMÉRICA")
+                    .doesNotContain("CON VEINTIDÓS CENTAVOS DÓLARES")
+                    .doesNotContain("ESTADOS UNIDOPS")
                     .doesNotContain("DOMINIO AJENO")
                     .doesNotContain(",.")
                     .doesNotContain("el comprador")
