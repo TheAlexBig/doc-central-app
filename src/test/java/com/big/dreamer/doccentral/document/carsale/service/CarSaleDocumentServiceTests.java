@@ -116,4 +116,32 @@ class CarSaleDocumentServiceTests {
                     .contains("MARIA DE LOPEZ");
         }
     }
+
+    @Test
+    void supportsMotorcycleAsAVehicleClass() throws Exception {
+        var request = new CarSaleDocumentRequest(
+                new PersonDetails("Carlos", "Aguilar", "San Salvador", "San Marcos", "06390305-5",
+                        "Masculino", "23", "Estudiante"),
+                new PersonDetails("Cristian", "Merino", "La Libertad", "Colón", "03847821-1",
+                        "Masculino", "38", "Empleado"),
+                new CarDetails("M-607013", "Serpento", "Kaiza 150", "Azul", "2020", "DOS ASS",
+                        "Propiedad", "Motocicleta", "Urbana", "MOTOR1", "CHASIS1", "N/T"),
+                new DocumentDetails("Propiedad", "", "MIL DOSCIENTOS", "San Salvador",
+                        "San Salvador", "doce de junio de dos mil veintiséis", "trece horas",
+                        "No", "No"),
+                new LegalAgentDetails("Ana", "Valladares", "San Salvador", "San Salvador",
+                        "Femenino", "Notario"));
+
+        byte[] bytes = service.createDocument(request);
+
+        try (XWPFDocument generated = new XWPFDocument(new ByteArrayInputStream(bytes))) {
+            String text = generated.getParagraphs().stream()
+                    .map(paragraph -> paragraph.getText())
+                    .reduce("", (left, right) -> left + right);
+            assertThat(text)
+                    .contains("vehículo automotor usado")
+                    .contains("CLASE: Motocicleta")
+                    .contains("TIPO: Urbana");
+        }
+    }
 }
