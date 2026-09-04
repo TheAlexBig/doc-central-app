@@ -1,6 +1,6 @@
 # Política de privacidad de Central Docs
 
-Última actualización: 14 de agosto de 2026.
+Última actualización: 4 de septiembre de 2026.
 
 Central Docs es una aplicación de escritorio que funciona localmente. La
 aplicación no incluye telemetría, publicidad, analítica, cuentas en línea ni
@@ -13,10 +13,12 @@ Central Docs puede tratar y conservar en el equipo información introducida por
 el usuario, incluyendo:
 
 - nombres, DUI, fecha de nacimiento, domicilio, género y profesión u oficio;
-- información de compradores, vendedores y agentes jurídicos;
+- información de compradores, vendedores, deudores, acreedores, preparadores y
+  agentes jurídicos;
 - placas, marcas, modelos, VIN, motor, chasis y otras características de
   vehículos;
-- condiciones de compraventa;
+- condiciones de compraventa y mutuo, incluidos montos, plazos, intereses,
+  bancos, números de cuenta, garantías y jurisdicción;
 - borradores e historial de documentos;
 - documentos Word y PDF generados;
 - preferencias, plantillas y configuración local;

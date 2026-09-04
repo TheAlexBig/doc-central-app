@@ -5,6 +5,7 @@ import com.big.dreamer.doccentral.document.DocumentFormat;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
+import com.big.dreamer.doccentral.document.mutual.service.MutualDocumentService;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -30,14 +31,17 @@ public class DocumentHistoryController {
     private final GeneratedDocumentHistoryRepository historyRepository;
     private final GeneratedDocumentStorage documentStorage;
     private final CarSaleDocumentService documentService;
+    private final MutualDocumentService mutualDocumentService;
 
     public DocumentHistoryController(
             GeneratedDocumentHistoryRepository historyRepository,
             GeneratedDocumentStorage documentStorage,
-            CarSaleDocumentService documentService) {
+            CarSaleDocumentService documentService,
+            MutualDocumentService mutualDocumentService) {
         this.historyRepository = historyRepository;
         this.documentStorage = documentStorage;
         this.documentService = documentService;
+        this.mutualDocumentService = mutualDocumentService;
     }
 
     @GetMapping
@@ -72,6 +76,11 @@ public class DocumentHistoryController {
     }
 
     private byte[] createDocument(GeneratedDocumentMetadata metadata, DocumentFormat format) {
+        if ("mutual".equals(metadata.type()) && metadata.mutualDocument() != null) {
+            return format.isPdf()
+                    ? mutualDocumentService.createPdfDocument(metadata.mutualDocument())
+                    : mutualDocumentService.createDocument(metadata.mutualDocument());
+        }
         return format.isPdf()
                 ? documentService.createPdfDocument(metadata.document())
                 : documentService.createDocument(metadata.document());
@@ -81,7 +90,8 @@ public class DocumentHistoryController {
         if (metadata.fileName() != null && metadata.fileName().endsWith("." + format)) {
             return metadata.fileName();
         }
-        return "compra-venta_" + DateFormats.FILE_CREATED_AT.format(Instant.parse(metadata.createdAt())) + "." + format;
+        String prefix = "mutual".equals(metadata.type()) ? "mutuo_" : "compra-venta_";
+        return prefix + DateFormats.FILE_CREATED_AT.format(Instant.parse(metadata.createdAt())) + "." + format;
     }
 
     private String contentType(String format) {

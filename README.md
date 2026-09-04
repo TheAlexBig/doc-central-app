@@ -1,10 +1,10 @@
 # Central Docs El Salvador
 
 Central Docs is an offline-first Windows desktop application for generating
-legal documents in El Salvador. Its first implemented workflow prepares
-vehicle purchase-and-sale documents in Word and PDF from a guided Spanish
-form. The packaged application runs on the user's computer without a cloud
-account or external database.
+legal documents in El Salvador. Its guided Spanish workflows prepare vehicle
+purchase-and-sale agreements and simple mutual agreements in Word and PDF.
+The packaged application runs on the user's computer without a cloud account
+or external database.
 
 ## Download
 
@@ -30,11 +30,18 @@ The server binds only to `127.0.0.1`. During React development, Vite proxies
 `/api` requests to the backend at `http://127.0.0.1:8080`. Set
 `DOC_WEB_ORIGINS` only when a different local development origin is needed.
 
-## Generate A Document
+## Generate Documents
 
-`POST /api/v1/documents/car-sale` returns a downloadable
-`compra-venta.docx` file. The JSON request uses the form's Spanish domain
-names:
+| Document | Direct generation | Generation with history |
+| --- | --- | --- |
+| Vehicle sale | `POST /api/v1/documents/car-sale` | `POST /api/v1/documents/car-sale/history` |
+| Mutual agreement | `POST /api/v1/documents/mutual` | `POST /api/v1/documents/mutual/history` |
+
+Pass `?format=docx` or `?format=pdf`. Tracked endpoints receive
+`{"documento": {...}, "borrador": {...}}`, store the generated file, and
+return its identifier in `X-Document-History-Id`.
+
+The vehicle-sale request uses these Spanish domain names:
 
 ```json
 {
@@ -46,8 +53,15 @@ names:
 }
 ```
 
+The mutual-agreement request uses `deudor`, `acreedor`, `condiciones`, and
+`agente_juridico`. Conditions cover principal, term, due date, installments,
+payment bank/account, optional interest and default interest, funds purpose,
+optional bill-of-exchange guarantee, optional administrative expenses,
+special jurisdiction, signing location/date/time, and notarial identification.
+
 Missing required fields return HTTP `400` with a field-level validation map.
-Generated Word files are returned as downloads and are also saved locally.
+Generated Word and PDF files are returned as downloads and are also saved
+locally.
 
 ## Offline Desktop Behavior
 
@@ -63,7 +77,7 @@ created locally on first launch and remain editable offline:
 
 | Content             | Windows location                                     |
 | ------------------- | ---------------------------------------------------- |
-| Editable templates  | `%LOCALAPPDATA%\Central Docs\templates\car-sale\`    |
+| Editable car-sale templates | `%LOCALAPPDATA%\Central Docs\templates\car-sale\` |
 | Optional settings   | `%LOCALAPPDATA%\Central Docs\config\application.yml` |
 | Saved legal agents  | `%LOCALAPPDATA%\Central Docs\agents.json`            |
 | Generated documents | `%USERPROFILE%\Documents\Central Docs\Documents\`    |
@@ -88,9 +102,12 @@ access to the filesystem:
   bundled defaults; and
 - display the installed version and check GitHub for a newer release.
 
-Document history can be filtered by dates, document type, names, DUI, vehicle,
-plate, or legal agent. In-progress car-sale forms are saved automatically in
-the local browser profile and recovered after an accidental close.
+Document history includes vehicle sales and mutual agreements. It can be
+filtered by dates, document type, names, DUI, vehicle, plate, bank, account,
+or responsible person. Historical Word/PDF files can be downloaded again and
+their saved draft opens in the correct workflow. In-progress forms use an
+independent autosave key per document type and are recovered after an
+accidental close.
 
 The diagnostics section can export a support ZIP containing only application
 version, platform details, and sanitized logs. It excludes licenses, generated
@@ -106,8 +123,12 @@ backup is restored automatically and the damaged file is retained with a
 History and configuration are global application areas available at
 `/historial` and `/configuracion`; they are not nested inside a specific
 document workflow. Saved people, agents, and vehicle suggestions are managed
-from the global data view. Car-sale template text is presented as an ordered
+from the global data view. People are reusable as buyer, seller, debtor, or
+creditor. Car-sale template text is presented as an ordered
 set of blocks whose combination produces the final document.
+Mutual-agreement text is currently implemented in its document service and is
+listed for notarial review in [LEGAL_REVIEW.md](LEGAL_REVIEW.md); editable
+mutual template blocks remain follow-up work.
 The logs-folder action supports the Windows desktop API, `open` on macOS, and
 `xdg-open` when running the backend from a Linux desktop.
 

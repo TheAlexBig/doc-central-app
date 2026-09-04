@@ -10,6 +10,7 @@ import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepos
 import com.big.dreamer.doccentral.document.history.api.DocumentHistoryController;
 import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationRequest;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
+import com.big.dreamer.doccentral.document.mutual.service.MutualDocumentService;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
 import com.big.dreamer.doccentral.license.service.LicenseService;
@@ -50,7 +51,8 @@ class CarSaleDocumentControllerTests {
         historyRepository.initialize();
         documentController = new CarSaleDocumentController(
                 documentService, documentStorage, historyRepository, mock(LicenseService.class));
-        historyController = new DocumentHistoryController(historyRepository, documentStorage, documentService);
+        historyController = new DocumentHistoryController(
+                historyRepository, documentStorage, documentService, mock(MutualDocumentService.class));
     }
 
     @Test

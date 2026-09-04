@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.document.history.service;
 
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
+import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class GeneratedDocumentHistoryRepository {
 
     private static final String CAR_SALE_TYPE = "car-sale";
+    private static final String MUTUAL_TYPE = "mutual";
     private final Path historyFile;
     private final ObjectMapper objectMapper;
 
@@ -73,8 +75,34 @@ public class GeneratedDocumentHistoryRepository {
                         fullName(document.seller().givenName(), document.seller().lastName())),
                 vehicleName(document, draft),
                 document,
-                draft == null ? Map.of() : draft);
+                draft == null ? Map.of() : draft,
+                null);
 
+        List<GeneratedDocumentMetadata> documents = new ArrayList<>(findAll());
+        documents.add(0, metadata);
+        write(sortByMostRecent(documents));
+        return metadata;
+    }
+
+    public synchronized GeneratedDocumentMetadata saveMutual(
+            String fileName,
+            String createdAt,
+            MutualDocumentRequest document,
+            Map<String, Object> draft) {
+        String debtor = fullName(document.debtor().givenName(), document.debtor().lastName());
+        String creditor = fullName(document.creditor().givenName(), document.creditor().lastName());
+        GeneratedDocumentMetadata metadata = new GeneratedDocumentMetadata(
+                UUID.randomUUID().toString(),
+                MUTUAL_TYPE,
+                fileName,
+                createdAt,
+                "Mutuo - " + creditor + " / " + debtor,
+                debtor,
+                creditor,
+                "",
+                null,
+                draft == null ? Map.of() : draft,
+                document);
         List<GeneratedDocumentMetadata> documents = new ArrayList<>(findAll());
         documents.add(0, metadata);
         write(sortByMostRecent(documents));
