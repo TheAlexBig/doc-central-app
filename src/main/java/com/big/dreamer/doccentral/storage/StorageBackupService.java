@@ -40,7 +40,7 @@ public class StorageBackupService {
             for (String fileName : DATA_FILES) {
                 addFile(zip, directories.dataDirectory().resolve(fileName), "data/" + fileName);
             }
-            addDirectory(zip, directories.templatesDirectory(), "templates/");
+            addDirectory(zip, directories.templatesRootDirectory(), "templates/");
             addDirectory(zip, directories.documentsDirectory(), "documents/");
             zip.finish();
             return bytes.toByteArray();
@@ -100,8 +100,15 @@ public class StorageBackupService {
                     new String(contents, StandardCharsets.UTF_8));
         } else if (name.startsWith("templates/")) {
             String fileName = name.substring("templates/".length());
+            Path templateDirectory = directories.templatesDirectory();
+            // Backups created before document-specific folders store car-sale blocks directly.
+            if (fileName.matches("[a-z-]+/[a-z-]+\\.txt")) {
+                int separator = fileName.indexOf('/');
+                templateDirectory = directories.templatesDirectory(fileName.substring(0, separator));
+                fileName = fileName.substring(separator + 1);
+            }
             if (!fileName.matches("[a-z-]+\\.txt")) return;
-            LocalJsonFileWriter.write(directories.templatesDirectory().resolve(fileName),
+            LocalJsonFileWriter.write(templateDirectory.resolve(fileName),
                     new String(contents, StandardCharsets.UTF_8));
         } else if (name.startsWith("documents/")) {
             String relative = name.substring("documents/".length());

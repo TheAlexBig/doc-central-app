@@ -8,6 +8,9 @@ import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHist
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.model.MutualTerms;
 import com.big.dreamer.doccentral.document.mutual.service.MutualDocumentService;
+import com.big.dreamer.doccentral.document.mutual.service.MutualRulesService;
+import com.big.dreamer.doccentral.document.mutual.model.MutualInstrumentType;
+import com.big.dreamer.doccentral.document.mutual.model.MutualGuaranteeType;
 import com.big.dreamer.doccentral.license.service.LicenseService;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
 import org.junit.jupiter.api.Test;
@@ -31,8 +34,13 @@ class MutualDocumentControllerTests {
         when(history.saveMutual(any(), any(), any(), any())).thenReturn(new GeneratedDocumentMetadata(
                 "history-id", "mutual", "mutuo.docx", "2026-09-04T00:00:00Z",
                 "Mutuo", "Deudor", "Acreedor", "", null, Map.of(), request()));
+        MutualRulesService rules = mock(MutualRulesService.class);
+        when(rules.resolve(any())).thenReturn(new MutualRulesService.Resolution(
+                MutualInstrumentType.PRIVATE_AUTHENTICATED, MutualGuaranteeType.NONE,
+                java.util.Set.of(MutualInstrumentType.PRIVATE_AUTHENTICATED,
+                        MutualInstrumentType.PUBLIC_DEED), null, true, null));
         MutualDocumentController controller = new MutualDocumentController(
-                service, storage, mock(LicenseService.class), history);
+                service, storage, mock(LicenseService.class), history, rules);
 
         var response = controller.generateTracked(
                 new MutualGenerationRequest(request(), Map.of("terms", Map.of("amount", "750"))),

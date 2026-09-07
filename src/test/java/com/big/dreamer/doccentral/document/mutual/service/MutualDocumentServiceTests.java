@@ -1,11 +1,26 @@
 package com.big.dreamer.doccentral.document.mutual.service;
 
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
+import com.big.dreamer.doccentral.document.carsale.model.CarDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.model.MutualTerms;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+import java.nio.file.Path;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import com.big.dreamer.doccentral.document.mutual.model.MutualInstrumentType;
+import com.big.dreamer.doccentral.document.mutual.model.MutualGuaranteeType;
+import com.big.dreamer.doccentral.document.mutual.model.MutualTermMode;
+import com.big.dreamer.doccentral.document.mutual.model.MutualTermUnit;
+import com.big.dreamer.doccentral.document.mutual.model.MutualVehiclePledge;
+import com.big.dreamer.doccentral.storage.ApplicationDirectories;
+import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateRepository;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.ByteArrayInputStream;
 
@@ -14,7 +29,48 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MutualDocumentServiceTests {
 
-    private final MutualDocumentService service = new MutualDocumentService();
+    @TempDir
+    Path directory;
+    private MutualTemplateRepository repository;
+    private MutualDocumentService service;
+
+    @BeforeEach
+    void setUp() {
+        ApplicationDirectories directories = new ApplicationDirectories(directory.resolve("data").toString(), directory.resolve("documents").toString());
+        directories.initialize();
+        repository = new MutualTemplateRepository(directories);
+        repository.initializeTemplates();
+        service = new MutualDocumentService(repository,
+                new MutualRulesService(new MutualFinancialCalculator()));
+    }
+
+    @Test
+    void customBlocksApplyToWordAndPdfAndResetToOriginal() throws Exception {
+        String original = repository.findAll().get("purpose.txt");
+        repository.save("purpose.txt", original + " Texto personalizado del destino.");
+        try (XWPFDocument word = new XWPFDocument(new ByteArrayInputStream(service.createDocument(request(true))));
+             var pdf = Loader.loadPDF(service.createPdfDocument(request(true)))) {
+            assertThat(word.getParagraphs().stream().map(p -> p.getText()).reduce("", String::concat))
+                    .contains("Texto personalizado del destino.").doesNotContain(":fundsPurpose");
+            assertThat(new PDFTextStripper().getText(pdf).replaceAll("\\s+", " "))
+                    .contains("Texto personalizado del destino.").doesNotContain(":fundsPurpose");
+        }
+        repository.reset("purpose.txt");
+        assertThat(service.assemble(request(true)).contract()).doesNotContain("Texto personalizado");
+    }
+
+    @Test
+    void omitsOptionalBlocksAndKeepsSequentialNumbering() {
+        MutualDocumentRequest base = request(false);
+        MutualTerms t = base.terms();
+        MutualTerms terms = new MutualTerms(t.amount(), t.term(), t.dueDate(), t.installmentCount(),
+                t.installmentAmount(), t.paymentBank(), t.paymentAccount(), "", "", t.fundsPurpose(),
+                false, "", "", t.specialDomicile(), t.signingPlace(), t.signingState(), t.signingDate(),
+                t.signingTime(), t.identifiesDebtor(), t.identifiesCreditor());
+        String text = service.assemble(new MutualDocumentRequest(base.debtor(), base.creditor(), terms, base.legalAgent())).contract();
+        assertThat(text).doesNotContain("INTERESES:", "GARANTÍA:", "gastos administrativos")
+                .contains("III) ORIGEN", "IV) CAUSALES", "V) CADUCIDAD", "VI) DOMICILIO");
+    }
 
     @Test
     void createsMutualWithOptionalInterestAndGuaranteeClauses() throws Exception {
@@ -27,7 +83,7 @@ class MutualDocumentServiceTests {
                     .map(paragraph -> paragraph.getText())
                     .reduce("", (left, right) -> left + right);
             assertThat(text)
-                    .contains("CONTRATO DE MUTUO SIMPLE")
+                    .contains("CONTRATO DE MUTUO")
                     .contains("me denominaré \"LA DEUDORA\"")
                     .contains("me denominaré \"EL ACREEDOR\"")
                     .contains("INTERESES")
@@ -52,6 +108,51 @@ class MutualDocumentServiceTests {
     @Test
     void createsMutualAsPdf() {
         assertThat(service.createPdfDocument(request(true))).isNotEmpty();
+    }
+
+    @Test
+    void publicDeedUsesProtocolOpeningAndOmitsSeparateAuthentic() {
+        MutualDocumentRequest base = request(false);
+        MutualTerms t = base.terms();
+        MutualTerms terms = new MutualTerms(t.amount(), "DOCE MESES", t.dueDate(), t.installmentCount(),
+                t.installmentAmount(), t.paymentBank(), t.paymentAccount(), t.monthlyInterest(),
+                t.defaultInterest(), t.fundsPurpose(), false, "", t.administrativeExpenses(), "",
+                t.signingPlace(), t.signingState(), t.signingDate(), t.signingTime(),
+                t.identifiesDebtor(), t.identifiesCreditor(), new BigDecimal("750.22"),
+                MutualTermMode.DURATION, 12, MutualTermUnit.MONTHS, LocalDate.of(2026, 4, 9),
+                null, 6, new BigDecimal("3.75"), MutualInstrumentType.PUBLIC_DEED,
+                MutualGuaranteeType.NONE, 1, "UNO", "");
+        MutualDocumentContent content = service.assemble(new MutualDocumentRequest(
+                base.debtor(), base.creditor(), null, terms, base.legalAgent()));
+        assertThat(content.contract()).startsWith("NÚMERO UNO")
+                .contains("PLAN DE PAGOS", "capital $", "interés $", "cuota $",
+                        "Las cuotas pactadas ya comprenden el interés ordinario",
+                        "no se agregará otro interés ordinario");
+        assertThat(content.authentic()).isEmpty();
+    }
+
+    @Test
+    void rendersVehiclePledgeWithStructuredVehicleData() {
+        MutualDocumentRequest base = request(false);
+        MutualTerms t = base.terms();
+        MutualTerms terms = new MutualTerms(t.amount(), "SEIS MESES", t.dueDate(), t.installmentCount(),
+                t.installmentAmount(), t.paymentBank(), t.paymentAccount(), "", "DIEZ", t.fundsPurpose(),
+                false, "", "", "", t.signingPlace(), t.signingState(), t.signingDate(), t.signingTime(),
+                t.identifiesDebtor(), t.identifiesCreditor(), new BigDecimal("750.22"),
+                MutualTermMode.DURATION, 6, MutualTermUnit.MONTHS, LocalDate.of(2026, 4, 9),
+                null, 2, BigDecimal.ZERO, MutualInstrumentType.PRIVATE_AUTHENTICATED,
+                MutualGuaranteeType.VEHICLE_PLEDGE, null, "", "");
+        CarDetails vehicle = new CarDetails("P DOS NUEVE UNO CUATRO", "KIA", "SOUL", "BLANCO",
+                "DOS MIL CATORCE", "CINCO ASIENTOS", "PROPIEDAD", "AUTOMÓVIL", "COMPACTO",
+                "MOTOR UNO", "CHASIS UNO", "VIN UNO");
+        MutualDocumentContent content = service.assemble(new MutualDocumentRequest(
+                base.debtor(), base.creditor(), null,
+                new MutualVehiclePledge(vehicle, "SETECIENTOS CINCUENTA DÓLARES"),
+                terms, base.legalAgent()));
+
+        assertThat(content.contract()).contains("CONTRATO DE MUTUO CON GARANTÍA PRENDARIA",
+                "GARANTÍA PRENDARIA", "prenda sin desplazamiento",
+                "P DOS NUEVE UNO CUATRO", "Registro de Garantías Mobiliarias");
     }
 
     private MutualDocumentRequest request(boolean guarantee) {
