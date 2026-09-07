@@ -14,8 +14,8 @@ public final class MutualRequestValidator {
     public static void validate(MutualDocumentRequest request) {
         if (!"notario".equals(normalize(request.legalAgent().role()))) {
             throw new CarSaleRequestValidationException(
-                    "Seleccione un notario para autenticar el mutuo.",
-                    Map.of("agente_juridico.rol", "La auténtica debe ser autorizada por un notario."));
+                    "Seleccione un notario para autorizar el mutuo.",
+                    Map.of("agente_juridico.rol", "El instrumento debe ser autorizado por un notario."));
         }
         if (identifier(request.debtor().document()).equals(identifier(request.creditor().document()))) {
             throw new CarSaleRequestValidationException(
@@ -29,6 +29,15 @@ public final class MutualRequestValidator {
             throw new CarSaleRequestValidationException(
                     "Indique el vencimiento de la letra de cambio.",
                     Map.of("condiciones.fecha_vencimiento_garantia", "Campo requerido para esta garantía."));
+        }
+        if (request.guarantor() != null) {
+            String guarantor = identifier(request.guarantor().document());
+            if (guarantor.equals(identifier(request.debtor().document()))
+                    || guarantor.equals(identifier(request.creditor().document()))) {
+                throw new CarSaleRequestValidationException(
+                        "El fiador debe ser una persona diferente.",
+                        Map.of("fiador.documento", "Debe ser diferente al DUI del deudor y acreedor."));
+            }
         }
     }
 

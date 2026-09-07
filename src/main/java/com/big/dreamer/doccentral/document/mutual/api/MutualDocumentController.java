@@ -4,6 +4,8 @@ import com.big.dreamer.doccentral.document.DocumentFormat;
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.service.MutualDocumentService;
 import com.big.dreamer.doccentral.document.mutual.service.MutualRequestValidator;
+import com.big.dreamer.doccentral.document.mutual.service.MutualRulesService;
+import com.big.dreamer.doccentral.document.mutual.service.MutualFinancialPlan;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.model.MutualGenerationRequest;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
@@ -34,14 +36,17 @@ public class MutualDocumentController {
     private final GeneratedDocumentStorage storage;
     private final LicenseService licenseService;
     private final GeneratedDocumentHistoryRepository historyRepository;
+    private final MutualRulesService rules;
 
     public MutualDocumentController(MutualDocumentService service, GeneratedDocumentStorage storage,
                                     LicenseService licenseService,
-                                    GeneratedDocumentHistoryRepository historyRepository) {
+                                    GeneratedDocumentHistoryRepository historyRepository,
+                                    MutualRulesService rules) {
         this.service = service;
         this.storage = storage;
         this.licenseService = licenseService;
         this.historyRepository = historyRepository;
+        this.rules = rules;
     }
 
     @PostMapping
@@ -49,6 +54,7 @@ public class MutualDocumentController {
                                            @RequestParam(defaultValue = "docx") String format) {
         licenseService.requireActive();
         MutualRequestValidator.validate(request);
+        rules.resolve(request);
         DocumentFormat documentFormat = DocumentFormat.from(format);
         byte[] contents = documentFormat.isPdf() ? service.createPdfDocument(request) : service.createDocument(request);
         String fileName = "mutuo_" + FILE_DATE.format(Instant.now()) + "." + documentFormat.extension();
@@ -65,6 +71,7 @@ public class MutualDocumentController {
             @RequestParam(defaultValue = "docx") String format) {
         licenseService.requireActive();
         MutualRequestValidator.validate(request.document());
+        rules.resolve(request.document());
         DocumentFormat documentFormat = DocumentFormat.from(format);
         byte[] contents = documentFormat.isPdf()
                 ? service.createPdfDocument(request.document())
@@ -79,5 +86,14 @@ public class MutualDocumentController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(fileName, StandardCharsets.UTF_8).build().toString())
                 .header("X-Document-History-Id", metadata.id())
                 .body(contents);
+    }
+
+    @PostMapping("/calculate")
+    public MutualFinancialPlan calculate(@Valid @RequestBody MutualDocumentRequest request) {
+        licenseService.requireActive();
+        MutualRequestValidator.validate(request);
+        MutualFinancialPlan plan = rules.resolve(request).financialPlan();
+        if (plan == null) throw new IllegalArgumentException("Faltan datos estructurados para calcular el mutuo.");
+        return plan;
     }
 }

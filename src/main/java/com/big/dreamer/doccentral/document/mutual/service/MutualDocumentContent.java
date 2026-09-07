@@ -6,5 +6,7 @@ record MutualDocumentContent(
         String debtorName,
         String creditorName,
         String debtorTitle,
-        String creditorTitle) {
+        String creditorTitle,
+        String guarantorName,
+        String guarantorTitle) {
 }

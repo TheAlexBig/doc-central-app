@@ -33,7 +33,16 @@ public class ApplicationDirectories {
     }
 
     public Path templatesDirectory() {
-        return dataDirectory.resolve("templates").resolve("car-sale");
+        return templatesDirectory("car-sale");
+    }
+
+    public Path templatesDirectory(String documentType) {
+        if (!documentType.matches("[a-z-]+")) throw new IllegalArgumentException("Tipo de documento no válido.");
+        return templatesRootDirectory().resolve(documentType);
+    }
+
+    public Path templatesRootDirectory() {
+        return dataDirectory.resolve("templates");
     }
 
     public Path dataDirectory() {
