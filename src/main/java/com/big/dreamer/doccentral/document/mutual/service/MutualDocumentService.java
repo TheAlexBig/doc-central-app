@@ -9,7 +9,6 @@ import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateReposit
 import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
 import java.util.Map;
 import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -182,7 +181,7 @@ public class MutualDocumentService {
                     Map.entry("capital", money(plan.capital())),
                     Map.entry("interest", money(plan.interest())),
                     Map.entry("total", money(plan.total())),
-                    Map.entry("periodicity", plan.periodicity()),
+                    Map.entry("periodicity", SpanishLegalText.replaceDigits(plan.periodicity())),
                     Map.entry("schedule", schedule(plan)))));
         }
         clauses.add(render(templates, "purpose.txt", Map.ofEntries(
@@ -247,7 +246,7 @@ public class MutualDocumentService {
 
     private String schedule(MutualFinancialPlan plan) {
         return plan.installments().stream()
-                .map(item -> item.number() + ") " + formatDate(item.dueDate())
+                .map(item -> SpanishLegalText.number(item.number()) + ") " + formatDate(item.dueDate())
                         + ": capital " + money(item.capital())
                         + ", interés " + money(item.interest())
                         + ", cuota " + money(item.total()))
@@ -288,11 +287,11 @@ public class MutualDocumentService {
     }
 
     private String formatDate(java.time.LocalDate value) {
-        return DateTimeFormatter.ofPattern("dd/MM/uuuu").format(value);
+        return SpanishLegalText.date(value);
     }
 
     private String money(BigDecimal value) {
-        return "$" + value.setScale(2).toPlainString();
+        return SpanishLegalText.money(value);
     }
 
     private String person(Map<String, String> templates, PersonDetails person) {
