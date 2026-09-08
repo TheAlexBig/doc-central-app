@@ -10,13 +10,14 @@ import java.util.Map;
 public class MutualTemplateRepository extends EditableTemplateRepository {
     private static final String LEGACY_CONTRACT = "NOSOTROS: :debtor, que en lo sucesivo me denominaré \":debtorRole\"; y :creditor, que en adelante me denominaré \":creditorRole\", por medio del presente instrumento OTORGAMOS un CONTRATO DE MUTUO SIMPLE, sujeto a las siguientes cláusulas: :clauses En :signingPlace, departamento de :signingState, a :signingDate.";
     private static final String LEGACY_INTEREST = "III) INTERESES: La suma mutuada devengará :monthlyInterest por ciento de interés mensual y, en caso de mora, :defaultInterest por ciento mensual adicional, sin exceder la tasa máxima legal vigente.";
+    private static final String LEGACY_PAYMENT_SCHEDULE = ":number PLAN DE PAGOS: Capital :capital; intereses :interest; total a pagar :total. :periodicity. Vencimientos: :schedule.";
 
     public MutualTemplateRepository(ApplicationDirectories directories) {
         super(directories.templatesDirectory("mutual"), List.of(
             new Definition("contract.txt", "Contrato", "Contrato", "", "NOSOTROS: :debtor, que en lo sucesivo me denominaré \":debtorRole\"; y :creditor, que en adelante me denominaré \":creditorRole\", por medio del presente instrumento OTORGAMOS un :mutualType, sujeto a las siguientes cláusulas: :clauses En :signingPlace, departamento de :signingState, a :signingDate."),
             new Definition("principal.txt", "Capital mutuado", "Contrato", "", "I) MUTUO: :debtorSubject recibe a su entera satisfacción :fromCreditor la cantidad de :amount."),
             new Definition("payment.txt", "Plazo y forma de pago", "Contrato", "", "II) PLAZO Y FORMA DE PAGO: La suma mutuada será cancelada en un plazo de :term, con vencimiento el :dueDate, mediante :installments de :installmentAmount. El pago se depositará en la cuenta :paymentAccount del :paymentBank, a nombre de :creditorName."),
-            new Definition("payment-schedule.txt", "Plan de pagos", "Contrato", "Se incluye con el cálculo estructurado.", ":number PLAN DE PAGOS: Capital :capital; intereses :interest; total a pagar :total. :periodicity. Vencimientos: :schedule."),
+            new Definition("payment-schedule.txt", "Plan de pagos", "Contrato", "Se incluye con el cálculo estructurado.", ":number PLAN DE PAGOS: Capital :capital; intereses :interest; total a pagar :total. Los pagos se realizarán :periodicity. :schedule."),
             new Definition("interest.txt", "Intereses", "Contrato", "Se incluye cuando se indica interés mensual o por mora.", "III) INTERESES: :interestTerms"),
             new Definition("purpose.txt", "Origen y destino de los fondos", "Contrato", "", ":number ORIGEN Y DESTINO DE LOS FONDOS: El crédito se otorga con fondos propios obtenidos lícitamente. :debtorSubject destinará los fondos a :fundsPurpose y pagará la obligación con fondos procedentes de actividades lícitas."),
             new Definition("guarantee.txt", "Garantía", "Contrato", "Se incluye cuando se suscribe una letra de cambio.", ":number GARANTÍA: :debtorSubject suscribe una letra de cambio sin protesto por :amount, :forCreditor, con vencimiento el :guaranteeDueDate. La letra garantiza esta obligación y no constituye una doble obligación."),
@@ -33,6 +34,7 @@ public class MutualTemplateRepository extends EditableTemplateRepository {
             new Definition("person.txt", "Datos de comparecientes", "Compartido", "", ":name, de :age años de edad, :job, del domicilio de :settlement, departamento de :state, con Documento Único de Identidad homologado número :document")),
                 Map.of(
                         "contract.txt", List.of(LEGACY_CONTRACT),
-                        "interest.txt", List.of(LEGACY_INTEREST)));
+                        "interest.txt", List.of(LEGACY_INTEREST),
+                        "payment-schedule.txt", List.of(LEGACY_PAYMENT_SCHEDULE)));
     }
 }

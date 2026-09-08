@@ -178,8 +178,8 @@ public class MutualDocumentService {
                     Map.entry("capital", money(plan.capital())),
                     Map.entry("interest", money(plan.interest())),
                     Map.entry("total", money(plan.total())),
-                    Map.entry("periodicity", LegalDocumentText.replaceDigits(plan.periodicity())),
-                    Map.entry("schedule", schedule(plan)))));
+                    Map.entry("periodicity", legalPeriodicity(plan)),
+                    Map.entry("schedule", scheduleSummary(plan)))));
         }
         clauses.add(render(templates, "purpose.txt", Map.ofEntries(
                 Map.entry("number", number(clauses.size() + 1)),
@@ -241,13 +241,25 @@ public class MutualDocumentService {
         return String.join(" ", clauses);
     }
 
-    private String schedule(MutualFinancialPlan plan) {
-        return plan.installments().stream()
-                .map(item -> LegalDocumentText.number(item.number()) + ") " + formatDate(item.dueDate())
-                        + ": capital " + money(item.capital())
-                        + ", interés " + money(item.interest())
-                        + ", cuota " + money(item.total()))
-                .reduce((left, right) -> left + "; " + right).orElse("");
+    private String scheduleSummary(MutualFinancialPlan plan) {
+        String firstDueDate = formatDate(plan.installments().getFirst().dueDate());
+        if (plan.installmentCount() == 1) {
+            return "La única cuota vencerá el " + firstDueDate;
+        }
+        String lastDueDate = formatDate(plan.installments().getLast().dueDate());
+        return "La primera cuota vencerá el " + firstDueDate
+                + "; las cuotas sucesivas vencerán conforme a esa periodicidad hasta la última, que vencerá el "
+                + lastDueDate;
+    }
+
+    private String legalPeriodicity(MutualFinancialPlan plan) {
+        if (plan.installmentCount() == 1) return "en un único pago";
+        String periodicity = LegalDocumentText.replaceDigits(plan.periodicity());
+        if (periodicity.startsWith("Cada ")) {
+            return periodicity.replaceFirst("^Cada UNO ", "cada UN ")
+                    .replaceFirst("^Cada ", "cada ");
+        }
+        return "en " + Character.toLowerCase(periodicity.charAt(0)) + periodicity.substring(1);
     }
 
     private String installmentDescription(MutualFinancialPlan plan) {
