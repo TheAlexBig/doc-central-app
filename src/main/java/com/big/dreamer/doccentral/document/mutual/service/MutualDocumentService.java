@@ -7,9 +7,9 @@ import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.model.MutualTerms;
 import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateRepository;
 import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
+import com.big.dreamer.doccentral.document.text.LegalDocumentText;
 import java.util.Map;
 import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class MutualDocumentService {
@@ -37,8 +35,6 @@ public class MutualDocumentService {
     private static final float FONT_SIZE = 11;
     private static final float LINE_HEIGHT = 15;
     private static final float MARGIN = 54;
-    private static final Pattern AMOUNT_WITH_CENTS = Pattern.compile("^(.+?) CON (.+ CENTAVOS)$");
-
     private final MutualTemplateRepository repository;
     private final MutualRulesService rules;
 
@@ -182,7 +178,7 @@ public class MutualDocumentService {
                     Map.entry("capital", money(plan.capital())),
                     Map.entry("interest", money(plan.interest())),
                     Map.entry("total", money(plan.total())),
-                    Map.entry("periodicity", plan.periodicity()),
+                    Map.entry("periodicity", LegalDocumentText.replaceDigits(plan.periodicity())),
                     Map.entry("schedule", schedule(plan)))));
         }
         clauses.add(render(templates, "purpose.txt", Map.ofEntries(
@@ -247,7 +243,7 @@ public class MutualDocumentService {
 
     private String schedule(MutualFinancialPlan plan) {
         return plan.installments().stream()
-                .map(item -> item.number() + ") " + formatDate(item.dueDate())
+                .map(item -> LegalDocumentText.number(item.number()) + ") " + formatDate(item.dueDate())
                         + ": capital " + money(item.capital())
                         + ", interés " + money(item.interest())
                         + ", cuota " + money(item.total()))
@@ -288,11 +284,11 @@ public class MutualDocumentService {
     }
 
     private String formatDate(java.time.LocalDate value) {
-        return DateTimeFormatter.ofPattern("dd/MM/uuuu").format(value);
+        return LegalDocumentText.date(value);
     }
 
     private String money(BigDecimal value) {
-        return "$" + value.setScale(2).toPlainString();
+        return LegalDocumentText.money(value);
     }
 
     private String person(Map<String, String> templates, PersonDetails person) {
@@ -310,12 +306,7 @@ public class MutualDocumentService {
     }
 
     private String currency(String amount) {
-        Matcher matcher = AMOUNT_WITH_CENTS.matcher(amount == null ? "" : amount);
-        if (matcher.matches()) {
-            return matcher.group(1) + " DÓLARES CON " + matcher.group(2)
-                    + " DE DÓLAR DE LOS ESTADOS UNIDOS DE AMÉRICA";
-        }
-        return amount + " DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA";
+        return LegalDocumentText.currencyFromWords(amount);
     }
 
     private String number(int value) {

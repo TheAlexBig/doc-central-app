@@ -4,9 +4,13 @@ import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class MutualTemplateRepository extends EditableTemplateRepository {
+    private static final String LEGACY_CONTRACT = "NOSOTROS: :debtor, que en lo sucesivo me denominaré \":debtorRole\"; y :creditor, que en adelante me denominaré \":creditorRole\", por medio del presente instrumento OTORGAMOS un CONTRATO DE MUTUO SIMPLE, sujeto a las siguientes cláusulas: :clauses En :signingPlace, departamento de :signingState, a :signingDate.";
+    private static final String LEGACY_INTEREST = "III) INTERESES: La suma mutuada devengará :monthlyInterest por ciento de interés mensual y, en caso de mora, :defaultInterest por ciento mensual adicional, sin exceder la tasa máxima legal vigente.";
+
     public MutualTemplateRepository(ApplicationDirectories directories) {
         super(directories.templatesDirectory("mutual"), List.of(
             new Definition("contract.txt", "Contrato", "Contrato", "", "NOSOTROS: :debtor, que en lo sucesivo me denominaré \":debtorRole\"; y :creditor, que en adelante me denominaré \":creditorRole\", por medio del presente instrumento OTORGAMOS un :mutualType, sujeto a las siguientes cláusulas: :clauses En :signingPlace, departamento de :signingState, a :signingDate."),
@@ -26,6 +30,9 @@ public class MutualTemplateRepository extends EditableTemplateRepository {
             new Definition("expenses.txt", "Gastos administrativos", "Contrato", "Se incluye cuando se indican gastos administrativos.", " :debtorSubject pagará :administrativeExpenses por ciento en concepto de gastos administrativos."),
             new Definition("authentic.txt", "Auténtica notarial", "Auténtica", "", "En :signingPlace, departamento de :signingState, a las :signingTime de :signingDate. Ante mí, :notary, :notaryTitle, del domicilio de :notaryPlace, departamento de :notaryState, comparecen :identifiedDebtor, denominado \":debtorRole\", y :identifiedCreditor, denominado \":creditorRole\". ME DICEN: Que reconocen como suyas las firmas puestas en el documento privado anterior y ratifican íntegramente sus declaraciones, obligaciones, pactos y renuncias, documento que literalmente dice: «:contract» YO, :notaryTitle, DOY FE de que las firmas son auténticas por haber sido puestas en mi presencia. Advertí a los otorgantes lo dispuesto en el artículo doscientos veinte del Código Tributario, la Ley Contra el Lavado de Dinero y de Activos y la Ley Contra la Usura. Expliqué los efectos legales de esta acta notarial y, leída íntegramente en un solo acto sin interrupción, ratifican su contenido y firmamos. DOY FE."),
             new Definition("public-deed.txt", "Escritura pública", "Escritura pública", "No genera auténtica separada.", "NÚMERO :deedNumber. En :signingPlace, departamento de :signingState, a las :signingTime de :signingDate. Ante mí, :notary, :notaryTitle, comparecen :debtor y :creditor; y ME DICEN: Que otorgan un :mutualType sujeto a las cláusulas siguientes: :clauses. Expliqué a los comparecientes los efectos legales de este instrumento; leído íntegramente, ratifican su contenido y firmamos. DOY FE."),
-            new Definition("person.txt", "Datos de comparecientes", "Compartido", "", ":name, de :age años de edad, :job, del domicilio de :settlement, departamento de :state, con Documento Único de Identidad homologado número :document")));
+            new Definition("person.txt", "Datos de comparecientes", "Compartido", "", ":name, de :age años de edad, :job, del domicilio de :settlement, departamento de :state, con Documento Único de Identidad homologado número :document")),
+                Map.of(
+                        "contract.txt", List.of(LEGACY_CONTRACT),
+                        "interest.txt", List.of(LEGACY_INTEREST)));
     }
 }

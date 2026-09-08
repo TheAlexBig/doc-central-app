@@ -21,9 +21,16 @@ public class EditableTemplateRepository {
     private static final Pattern PLACEHOLDER = Pattern.compile(":([A-Za-z][A-Za-z0-9]*)");
     private final Path directory;
     private final Map<String, Definition> definitions = new LinkedHashMap<>();
+    private final Map<String, List<String>> legacyDefaults;
 
     protected EditableTemplateRepository(Path directory, List<Definition> definitions) {
+        this(directory, definitions, Map.of());
+    }
+
+    protected EditableTemplateRepository(Path directory, List<Definition> definitions,
+                                         Map<String, List<String>> legacyDefaults) {
         this.directory = directory;
+        this.legacyDefaults = Map.copyOf(legacyDefaults);
         definitions.forEach(definition -> this.definitions.put(definition.name(), definition));
     }
 
@@ -35,6 +42,11 @@ public class EditableTemplateRepository {
                 Path path = directory.resolve(definition.name());
                 if (Files.notExists(path)) {
                     LocalJsonFileWriter.write(path, definition.content());
+                } else {
+                    String current = Files.readString(path, StandardCharsets.UTF_8);
+                    if (legacyDefaults.getOrDefault(definition.name(), List.of()).contains(current)) {
+                        LocalJsonFileWriter.write(path, definition.content());
+                    }
                 }
             }
         } catch (IOException exception) {
