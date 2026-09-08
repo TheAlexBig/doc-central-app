@@ -8,6 +8,7 @@ import com.big.dreamer.doccentral.document.mutual.model.MutualTerms;
 import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateRepository;
 import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
 import com.big.dreamer.doccentral.document.text.LegalDocumentText;
+import com.big.dreamer.doccentral.document.text.NotarialIdentificationText;
 import java.util.Map;
 import java.math.BigDecimal;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -304,17 +305,23 @@ public class MutualDocumentService {
     }
 
     private String person(Map<String, String> templates, PersonDetails person) {
-        return render(templates, "person.txt", Map.ofEntries(
+        return render(templates, "person.txt", personValues(person));
+    }
+
+    private String identified(Map<String, String> templates, PersonDetails person, String known) {
+        Map<String, String> values = new java.util.LinkedHashMap<>(personValues(person));
+        values.put("knowledge", NotarialIdentificationText.knowledge(known));
+        return render(templates, "identified-person.txt", values);
+    }
+
+    private Map<String, String> personValues(PersonDetails person) {
+        return Map.ofEntries(
                 Map.entry("name", fullName(person)),
                 Map.entry("age", person.age()),
                 Map.entry("job", person.job()),
                 Map.entry("settlement", person.settlement()),
                 Map.entry("state", person.state()),
-                Map.entry("document", person.document())));
-    }
-
-    private String identified(Map<String, String> templates, PersonDetails person, String known) {
-        return person(templates, person) + ("Sí".equalsIgnoreCase(known) ? ", a quien conozco" : ", a quien no conozco e identifico");
+                Map.entry("document", person.document()));
     }
 
     private String currency(String amount) {

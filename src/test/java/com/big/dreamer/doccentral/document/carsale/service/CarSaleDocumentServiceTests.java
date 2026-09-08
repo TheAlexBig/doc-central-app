@@ -107,8 +107,9 @@ class CarSaleDocumentServiceTests {
                     .doesNotContain("dándose por recibido")
                     .doesNotContain("en la ciudad de")
                     .doesNotContain("domicilio especial el de esta ciudad")
-                    .contains("a quien no conozco")
-                    .contains("a quien hoy conozco")
+                    .contains("a quien no conozco e identifico con Documento Único de Identidad homologado número 00000000-0")
+                    .contains("a quien conozco e identifico con Documento Único de Identidad homologado número 11111111-1")
+                    .doesNotContain("a quien hoy conozco", "e identifico por medio de su")
                     .doesNotContain("Numero Identificación Tributaria")
                     .doesNotContain(":nit");
             assertThat(tableText)

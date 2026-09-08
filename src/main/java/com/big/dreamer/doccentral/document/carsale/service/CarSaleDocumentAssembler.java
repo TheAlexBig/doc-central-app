@@ -7,6 +7,7 @@ import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
 import com.big.dreamer.doccentral.document.text.LegalDocumentText;
+import com.big.dreamer.doccentral.document.text.NotarialIdentificationText;
 
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -48,11 +49,11 @@ final class CarSaleDocumentAssembler {
         authenticPeople = replaceFirst(
                 authenticPeople,
                 ":identifiesSeller",
-                identificationText(request.document().identifiesSeller()));
+                NotarialIdentificationText.knowledge(request.document().identifiesSeller()));
         authenticPeople = replaceFirst(
                 authenticPeople,
                 ":identifiesBuyer",
-                identificationText(request.document().identifiesBuyer()));
+                NotarialIdentificationText.knowledge(request.document().identifiesBuyer()));
         String authenticCar = populateCar(
                 templates.carAuthentic(), request.vehicle(), request.seller());
         String authenticTerms = populateDocument(
@@ -237,10 +238,6 @@ final class CarSaleDocumentAssembler {
 
     private String fullName(PersonDetails person) {
         return uppercaseName(person.givenName()) + " " + uppercaseName(person.lastName());
-    }
-
-    private String identificationText(String identified) {
-        return "No".equalsIgnoreCase(identified) ? "a quien no conozco" : "a quien hoy conozco";
     }
 
     private String replaceFirst(String source, String placeholder, String value) {

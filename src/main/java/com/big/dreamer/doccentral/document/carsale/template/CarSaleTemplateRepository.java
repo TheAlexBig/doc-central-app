@@ -41,7 +41,8 @@ public class CarSaleTemplateRepository {
                 CarSaleTemplates.PREVIOUS_PEOPLE_DOCUMENT));
         LEGACY_TEMPLATES.put("people-authentic.txt", List.of(
                 CarSaleTemplates.LEGACY_PEOPLE_AUTHENTIC,
-                CarSaleTemplates.PREVIOUS_PEOPLE_AUTHENTIC));
+                CarSaleTemplates.PREVIOUS_PEOPLE_AUTHENTIC,
+                CarSaleTemplates.PREVIOUS_KNOWLEDGE_PEOPLE_AUTHENTIC));
         LEGACY_TEMPLATES.put("car-document.txt", List.of(
                 CarSaleTemplates.RELEASED_CAR_DOCUMENT,
                 CarSaleTemplates.PREVIOUS_CAR_DOCUMENT,

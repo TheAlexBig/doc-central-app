@@ -91,7 +91,10 @@ class MutualDocumentServiceTests {
                     .contains("letra de cambio")
                     .contains("SETECIENTOS CINCUENTA DÓLARES CON VEINTIDÓS CENTAVOS DE DÓLAR")
                     .contains("LA DEUDORA")
-                    .contains("EL ACREEDOR");
+                    .contains("EL ACREEDOR")
+                    .contains("a quien no conozco e identifico con Documento Único de Identidad homologado número CERO TRES-UNO")
+                    .contains("a quien no conozco e identifico con Documento Único de Identidad homologado número CERO CUATRO-DOS")
+                    .doesNotContain("número CERO TRES-UNO, a quien");
         }
     }
 
@@ -108,6 +111,25 @@ class MutualDocumentServiceTests {
     @Test
     void createsMutualAsPdf() {
         assertThat(service.createPdfDocument(request(true))).isNotEmpty();
+    }
+
+    @Test
+    void placesKnowledgeBeforeIdentificationForBothAnswers() {
+        MutualDocumentRequest base = request(false);
+        MutualTerms t = base.terms();
+        MutualTerms terms = new MutualTerms(t.amount(), t.term(), t.dueDate(), t.installmentCount(),
+                t.installmentAmount(), t.paymentBank(), t.paymentAccount(), t.monthlyInterest(),
+                t.defaultInterest(), t.fundsPurpose(), false, "", t.administrativeExpenses(),
+                t.specialDomicile(), t.signingPlace(), t.signingState(), t.signingDate(),
+                t.signingTime(), "Sí", "No");
+
+        String authentic = service.assemble(new MutualDocumentRequest(
+                base.debtor(), base.creditor(), terms, base.legalAgent())).authentic();
+
+        assertThat(authentic)
+                .contains("a quien conozco e identifico con Documento Único de Identidad homologado número CERO TRES-UNO")
+                .contains("a quien no conozco e identifico con Documento Único de Identidad homologado número CERO CUATRO-DOS")
+                .doesNotContain("número CERO TRES-UNO, a quien", "número CERO CUATRO-DOS, a quien");
     }
 
     @Test
