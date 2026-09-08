@@ -125,10 +125,12 @@ class MutualDocumentServiceTests {
         MutualDocumentContent content = service.assemble(new MutualDocumentRequest(
                 base.debtor(), base.creditor(), null, terms, base.legalAgent()));
         assertThat(content.contract()).startsWith("NÚMERO UNO")
-                .contains("PLAN DE PAGOS", "capital CIENTO", "interés CINCUENTA", "cuota CIENTO",
+                .contains("PLAN DE PAGOS", "Capital SETECIENTOS", "intereses", "total a pagar",
+                        "La primera cuota vencerá", "las cuotas sucesivas vencerán",
+                        "hasta la última, que vencerá",
                         "Las cuotas pactadas ya comprenden el interés ordinario",
                         "no se agregará otro interés ordinario")
-                .doesNotContain("$", "/2026", "/2027");
+                .doesNotContain("Vencimientos:", "1)", "2)", "$", "/2026", "/2027");
         assertThat(content.authentic()).isEmpty();
     }
 

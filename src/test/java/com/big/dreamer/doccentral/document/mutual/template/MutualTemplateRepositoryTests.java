@@ -53,6 +53,9 @@ class MutualTemplateRepositoryTests {
                 "III) INTERESES: La suma mutuada devengará :monthlyInterest por ciento de interés mensual y, "
                         + "en caso de mora, :defaultInterest por ciento mensual adicional, sin exceder la tasa "
                         + "máxima legal vigente.");
+        Files.writeString(templates.resolve("payment-schedule.txt"),
+                ":number PLAN DE PAGOS: Capital :capital; intereses :interest; total a pagar :total. "
+                        + ":periodicity. Vencimientos: :schedule.");
         Files.writeString(templates.resolve("principal.txt"), "Plantilla personalizada :debtorSubject :fromCreditor :amount");
 
         MutualTemplateRepository repository = new MutualTemplateRepository(directories);
@@ -60,6 +63,8 @@ class MutualTemplateRepositoryTests {
 
         assertThat(repository.findAll().get("contract.txt")).contains(":mutualType");
         assertThat(repository.findAll().get("interest.txt")).contains(":interestTerms");
+        assertThat(repository.findAll().get("payment-schedule.txt"))
+                .contains("Los pagos se realizarán").doesNotContain("Vencimientos:");
         assertThat(repository.findAll().get("principal.txt")).startsWith("Plantilla personalizada");
     }
 }
