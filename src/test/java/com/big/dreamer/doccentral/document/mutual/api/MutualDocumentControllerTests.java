@@ -33,7 +33,7 @@ class MutualDocumentControllerTests {
         when(service.createDocument(any())).thenReturn(new byte[]{1, 2, 3});
         when(history.saveMutual(any(), any(), any(), any())).thenReturn(new GeneratedDocumentMetadata(
                 "history-id", "mutual", "mutuo.docx", "2026-09-04T00:00:00Z",
-                "Mutuo", "Deudor", "Acreedor", "", null, Map.of(), request()));
+                "Mutuo", "Deudor", "Acreedor", "", null, Map.of(), request(), null));
         MutualRulesService rules = mock(MutualRulesService.class);
         when(rules.resolve(any())).thenReturn(new MutualRulesService.Resolution(
                 MutualInstrumentType.PRIVATE_AUTHENTICATED, MutualGuaranteeType.NONE,

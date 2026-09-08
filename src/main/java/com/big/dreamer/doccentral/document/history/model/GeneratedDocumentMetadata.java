@@ -2,6 +2,7 @@ package com.big.dreamer.doccentral.document.history.model;
 
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
+import com.big.dreamer.doccentral.document.marriage.model.MarriageDocumentRequest;
 
 import java.util.Map;
 
@@ -16,5 +17,6 @@ public record GeneratedDocumentMetadata(
         String vehicle,
         CarSaleDocumentRequest document,
         Map<String, Object> draft,
-        MutualDocumentRequest mutualDocument) {
+        MutualDocumentRequest mutualDocument,
+        MarriageDocumentRequest marriageDocument) {
 }

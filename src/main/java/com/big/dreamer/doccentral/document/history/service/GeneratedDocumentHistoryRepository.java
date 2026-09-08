@@ -3,6 +3,7 @@ package com.big.dreamer.doccentral.document.history.service;
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
+import com.big.dreamer.doccentral.document.marriage.model.MarriageDocumentRequest;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import com.big.dreamer.doccentral.storage.RecoverableJsonFileReader;
@@ -27,6 +28,7 @@ public class GeneratedDocumentHistoryRepository {
 
     private static final String CAR_SALE_TYPE = "car-sale";
     private static final String MUTUAL_TYPE = "mutual";
+    private static final String MARRIAGE_TYPE = "marriage";
     private final Path historyFile;
     private final ObjectMapper objectMapper;
 
@@ -76,6 +78,7 @@ public class GeneratedDocumentHistoryRepository {
                 vehicleName(document, draft),
                 document,
                 draft == null ? Map.of() : draft,
+                null,
                 null);
 
         List<GeneratedDocumentMetadata> documents = new ArrayList<>(findAll());
@@ -102,7 +105,26 @@ public class GeneratedDocumentHistoryRepository {
                 "",
                 null,
                 draft == null ? Map.of() : draft,
-                document);
+                document,
+                null);
+        List<GeneratedDocumentMetadata> documents = new ArrayList<>(findAll());
+        documents.add(0, metadata);
+        write(sortByMostRecent(documents));
+        return metadata;
+    }
+
+    public synchronized GeneratedDocumentMetadata saveMarriage(
+            String fileName,
+            String createdAt,
+            MarriageDocumentRequest document,
+            Map<String, Object> draft) {
+        String partyOne = fullName(document.partyOne().person().givenName(), document.partyOne().person().lastName());
+        String partyTwo = fullName(document.partyTwo().person().givenName(), document.partyTwo().person().lastName());
+        GeneratedDocumentMetadata metadata = new GeneratedDocumentMetadata(
+                UUID.randomUUID().toString(), MARRIAGE_TYPE, fileName, createdAt,
+                "Matrimonio - " + partyOne + " / " + partyTwo,
+                partyOne, partyTwo, "", null,
+                draft == null ? Map.of() : draft, null, document);
         List<GeneratedDocumentMetadata> documents = new ArrayList<>(findAll());
         documents.add(0, metadata);
         write(sortByMostRecent(documents));

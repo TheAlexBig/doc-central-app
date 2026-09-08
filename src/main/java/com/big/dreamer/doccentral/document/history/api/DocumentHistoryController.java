@@ -6,6 +6,7 @@ import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentServic
 import com.big.dreamer.doccentral.document.history.model.GeneratedDocumentMetadata;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
 import com.big.dreamer.doccentral.document.mutual.service.MutualDocumentService;
+import com.big.dreamer.doccentral.document.marriage.service.MarriageDocumentService;
 import com.big.dreamer.doccentral.storage.GeneratedDocumentStorage;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -32,16 +33,19 @@ public class DocumentHistoryController {
     private final GeneratedDocumentStorage documentStorage;
     private final CarSaleDocumentService documentService;
     private final MutualDocumentService mutualDocumentService;
+    private final MarriageDocumentService marriageDocumentService;
 
     public DocumentHistoryController(
             GeneratedDocumentHistoryRepository historyRepository,
             GeneratedDocumentStorage documentStorage,
             CarSaleDocumentService documentService,
-            MutualDocumentService mutualDocumentService) {
+            MutualDocumentService mutualDocumentService,
+            MarriageDocumentService marriageDocumentService) {
         this.historyRepository = historyRepository;
         this.documentStorage = documentStorage;
         this.documentService = documentService;
         this.mutualDocumentService = mutualDocumentService;
+        this.marriageDocumentService = marriageDocumentService;
     }
 
     @GetMapping
@@ -81,6 +85,11 @@ public class DocumentHistoryController {
                     ? mutualDocumentService.createPdfDocument(metadata.mutualDocument())
                     : mutualDocumentService.createDocument(metadata.mutualDocument());
         }
+        if ("marriage".equals(metadata.type()) && metadata.marriageDocument() != null) {
+            return format.isPdf()
+                    ? marriageDocumentService.createPdfDocument(metadata.marriageDocument())
+                    : marriageDocumentService.createDocument(metadata.marriageDocument());
+        }
         return format.isPdf()
                 ? documentService.createPdfDocument(metadata.document())
                 : documentService.createDocument(metadata.document());
@@ -90,7 +99,11 @@ public class DocumentHistoryController {
         if (metadata.fileName() != null && metadata.fileName().endsWith("." + format)) {
             return metadata.fileName();
         }
-        String prefix = "mutual".equals(metadata.type()) ? "mutuo_" : "compra-venta_";
+        String prefix = switch (metadata.type()) {
+            case "mutual" -> "mutuo_";
+            case "marriage" -> "matrimonio_";
+            default -> "compra-venta_";
+        };
         return prefix + DateFormats.FILE_CREATED_AT.format(Instant.parse(metadata.createdAt())) + "." + format;
     }
 
