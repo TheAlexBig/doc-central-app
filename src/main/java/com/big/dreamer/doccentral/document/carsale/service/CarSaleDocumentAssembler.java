@@ -6,10 +6,10 @@ import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
+import com.big.dreamer.doccentral.document.text.LegalDocumentText;
 
 import java.util.Locale;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 final class CarSaleDocumentAssembler {
 
@@ -21,8 +21,6 @@ final class CarSaleDocumentAssembler {
     private static final String LEGAL_WOMAN = "NOTARIA";
     private static final String LAWYER_DEFAULT = "ABOGADO";
     private static final String LAWYER_WOMAN = "ABOGADA";
-    private static final Pattern PRICE_WITH_CENTS = Pattern.compile("^(.+?) CON (.+ CENTAVOS)$");
-
     CarSaleDocumentSections createSections(
             CarSaleDocumentRequest request,
             CarSaleTemplateRepository.Templates templates) {
@@ -175,18 +173,11 @@ final class CarSaleDocumentAssembler {
     }
 
     private String populatePrice(String template, String price) {
-        Matcher matcher = PRICE_WITH_CENTS.matcher(price == null ? "" : price);
-        if (matcher.matches()) {
-            String amount = matcher.group(1)
-                    + " DÓLARES CON "
-                    + matcher.group(2)
-                    + " DE DÓLAR";
-            String populated = template.replaceFirst(
-                    ":price\\s+D[ÓO]LARES",
-                    Matcher.quoteReplacement(amount));
-            if (!populated.equals(template)) {
-                return populated;
-            }
+        String populated = template.replaceFirst(
+                ":price\\s+D[ÓO]LARES",
+                Matcher.quoteReplacement(LegalDocumentText.dollarsFromWords(price)));
+        if (!populated.equals(template)) {
+            return populated;
         }
         return replaceFirst(template, ":price", price);
     }

@@ -1,4 +1,4 @@
-package com.big.dreamer.doccentral.document.mutual.service;
+package com.big.dreamer.doccentral.document.text;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -7,7 +7,7 @@ import java.time.Month;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class SpanishLegalText {
+public final class LegalDocumentText {
     private static final String[] UNITS = {
             "CERO", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"
     };
@@ -24,11 +24,12 @@ final class SpanishLegalText {
             "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"
     };
     private static final Pattern DIGITS = Pattern.compile("\\d+");
+    private static final Pattern AMOUNT_WITH_CENTS = Pattern.compile("^(.+?) CON (.+ CENTAVOS)$");
 
-    private SpanishLegalText() {
+    private LegalDocumentText() {
     }
 
-    static String money(BigDecimal value) {
+    public static String money(BigDecimal value) {
         BigDecimal normalized = value.setScale(2, RoundingMode.HALF_UP);
         long whole = normalized.longValue();
         int cents = normalized.remainder(BigDecimal.ONE).movePointRight(2).abs().intValue();
@@ -38,12 +39,25 @@ final class SpanishLegalText {
         return dollars + " CON " + centText + " DE DÓLAR DE LOS ESTADOS UNIDOS DE AMÉRICA";
     }
 
-    static String date(LocalDate value) {
+    public static String dollarsFromWords(String amount) {
+        String value = amount == null ? "" : amount;
+        Matcher matcher = AMOUNT_WITH_CENTS.matcher(value);
+        if (matcher.matches()) {
+            return matcher.group(1) + " DÓLARES CON " + matcher.group(2) + " DE DÓLAR";
+        }
+        return value + " DÓLARES";
+    }
+
+    public static String currencyFromWords(String amount) {
+        return dollarsFromWords(amount) + " DE LOS ESTADOS UNIDOS DE AMÉRICA";
+    }
+
+    public static String date(LocalDate value) {
         return number(value.getDayOfMonth()) + " DE " + month(value.getMonth())
                 + " DE " + number(value.getYear());
     }
 
-    static String replaceDigits(String value) {
+    public static String replaceDigits(String value) {
         Matcher matcher = DIGITS.matcher(value);
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
@@ -53,7 +67,7 @@ final class SpanishLegalText {
         return result.toString();
     }
 
-    static String number(long value) {
+    public static String number(long value) {
         if (value < 0) return "MENOS " + number(-value);
         if (value < 1_000) return belowThousand((int) value);
         if (value < 1_000_000) {
