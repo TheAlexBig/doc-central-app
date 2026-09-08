@@ -32,6 +32,7 @@ public class HtmlCacheControlFilter extends OncePerRequestFilter {
                 || "/index.html".equals(requestUri)
                 || "/compra-venta".equals(requestUri)
                 || "/mutuo".equals(requestUri)
+                || "/matrimonio".equals(requestUri)
                 || "/historial".equals(requestUri)
                 || "/configuracion".equals(requestUri);
     }

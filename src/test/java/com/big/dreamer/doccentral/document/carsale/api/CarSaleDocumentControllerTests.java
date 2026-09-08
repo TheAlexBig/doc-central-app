@@ -52,7 +52,8 @@ class CarSaleDocumentControllerTests {
         documentController = new CarSaleDocumentController(
                 documentService, documentStorage, historyRepository, mock(LicenseService.class));
         historyController = new DocumentHistoryController(
-                historyRepository, documentStorage, documentService, mock(MutualDocumentService.class));
+                historyRepository, documentStorage, documentService, mock(MutualDocumentService.class),
+                mock(com.big.dreamer.doccentral.document.marriage.service.MarriageDocumentService.class));
     }
 
     @Test
