@@ -1,0 +1,1 @@
+:number DOMICILIO Y RENUNCIAS: Para los efectos legales, :debtorText señala como domicilio especial :specialDomicile, a cuyos tribunales se somete expresamente. Los gastos judiciales y extrajudiciales ocasionados por este adeudo serán por cuenta de :debtorText.:expenses

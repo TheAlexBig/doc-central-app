@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "templates": [
+    {"name":"contract.txt","label":"Contrato","section":"Contrato","condition":""},
+    {"name":"principal.txt","label":"Capital mutuado","section":"Contrato","condition":""},
+    {"name":"payment.txt","label":"Plazo y forma de pago","section":"Contrato","condition":""},
+    {"name":"payment-schedule.txt","label":"Plan de pagos","section":"Contrato","condition":"Se incluye con el cálculo estructurado."},
+    {"name":"interest.txt","label":"Intereses","section":"Contrato","condition":"Se incluye cuando se indica interés mensual o por mora."},
+    {"name":"purpose.txt","label":"Origen y destino de los fondos","section":"Contrato","condition":""},
+    {"name":"guarantee.txt","label":"Garantía","section":"Contrato","condition":"Se incluye cuando se suscribe una letra de cambio."},
+    {"name":"personal-guarantee.txt","label":"Fiador o garante","section":"Contrato","condition":"Se incluye con garantía personal."},
+    {"name":"vehicle-pledge.txt","label":"Garantía prendaria sobre vehículo","section":"Contrato","condition":"Se incluye con prenda sin desplazamiento sobre vehículo."},
+    {"name":"movable-guarantee.txt","label":"Garantía mobiliaria","section":"Contrato","condition":"Se incluye con garantía mobiliaria."},
+    {"name":"mortgage-guarantee.txt","label":"Garantía hipotecaria","section":"Escritura pública","condition":"Requiere escritura pública."},
+    {"name":"acceleration-causes.txt","label":"Causales de caducidad","section":"Contrato","condition":""},
+    {"name":"acceleration.txt","label":"Caducidad del plazo","section":"Contrato","condition":""},
+    {"name":"jurisdiction.txt","label":"Domicilio y renuncias","section":"Contrato","condition":""},
+    {"name":"expenses.txt","label":"Gastos administrativos","section":"Contrato","condition":"Se incluye cuando se indican gastos administrativos."},
+    {"name":"authentic.txt","label":"Auténtica notarial","section":"Auténtica","condition":""},
+    {"name":"public-deed.txt","label":"Escritura pública","section":"Escritura pública","condition":"No genera auténtica separada."},
+    {"name":"person.txt","label":"Datos de comparecientes","section":"Compartido","condition":""},
+    {"name":"identified-person.txt","label":"Identificación notarial","section":"Auténtica y escritura pública","condition":""}
+  ]
+}

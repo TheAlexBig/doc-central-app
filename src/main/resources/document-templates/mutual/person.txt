@@ -1,0 +1,1 @@
+:name, de :age años de edad, :job, del domicilio de :settlement, departamento de :state, con Documento Único de Identidad homologado número :document

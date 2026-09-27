@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class StorageBackupServiceTests {
 
@@ -64,7 +65,7 @@ class StorageBackupServiceTests {
     }
 
     @Test
-    void restoresLegacyFlatTemplatesIntoCarSaleFolder() throws Exception {
+    void rejectsPreviousBackupVersions() throws Exception {
         ApplicationDirectories directories = new ApplicationDirectories(
                 directory.resolve("data").toString(), directory.resolve("documents").toString());
         directories.initialize();
@@ -73,14 +74,12 @@ class StorageBackupServiceTests {
             zip.putNextEntry(new ZipEntry("manifest.json"));
             zip.write("{\"format\":\"central-docs-backup\",\"formatVersion\":1}".getBytes(StandardCharsets.UTF_8));
             zip.closeEntry();
-            zip.putNextEntry(new ZipEntry("templates/document.txt"));
-            zip.write("Compraventa anterior".getBytes(StandardCharsets.UTF_8));
-            zip.closeEntry();
         }
-        new StorageBackupService(directories, new ObjectMapper()).restoreBackup(bytes.toByteArray());
-        assertThat(Files.readString(directories.templatesDirectory().resolve("document.txt")))
-                .isEqualTo("Compraventa anterior");
-        assertThat(directories.templatesDirectory("mutual").resolve("document.txt")).doesNotExist();
+        StorageBackupService service = new StorageBackupService(directories, new ObjectMapper());
+
+        assertThatThrownBy(() -> service.restoreBackup(bytes.toByteArray()))
+                .isInstanceOf(StorageBackupException.class)
+                .hasMessage("La versión del respaldo no es compatible.");
     }
 
     private List<String> entryNames(byte[] archive) throws Exception {

@@ -1,6 +1,6 @@
 package com.big.dreamer.doccentral.document.template;
 
-import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
+import com.big.dreamer.doccentral.document.DocumentGenerationException;
 import com.big.dreamer.doccentral.storage.LocalJsonFileWriter;
 import jakarta.annotation.PostConstruct;
 
@@ -21,17 +21,24 @@ public class EditableTemplateRepository {
     private static final Pattern PLACEHOLDER = Pattern.compile(":([A-Za-z][A-Za-z0-9]*)");
     private final Path directory;
     private final Map<String, Definition> definitions = new LinkedHashMap<>();
-    private final Map<String, List<String>> legacyDefaults;
+    private final int version;
 
-    protected EditableTemplateRepository(Path directory, List<Definition> definitions) {
-        this(directory, definitions, Map.of());
+    protected EditableTemplateRepository(Path directory, String documentType) {
+        this(directory, TemplateCatalog.load(documentType));
     }
 
-    protected EditableTemplateRepository(Path directory, List<Definition> definitions,
-                                         Map<String, List<String>> legacyDefaults) {
+    private EditableTemplateRepository(Path directory, TemplateCatalog.Catalog catalog) {
         this.directory = directory;
-        this.legacyDefaults = Map.copyOf(legacyDefaults);
+        this.version = catalog.version();
+        catalog.definitions().forEach(definition -> this.definitions.put(definition.name(), definition));
+        validateDefinitions();
+    }
+
+    protected EditableTemplateRepository(Path directory, List<Definition> definitions) {
+        this.directory = directory;
+        this.version = 1;
         definitions.forEach(definition -> this.definitions.put(definition.name(), definition));
+        validateDefinitions();
     }
 
     @PostConstruct
@@ -42,11 +49,6 @@ public class EditableTemplateRepository {
                 Path path = directory.resolve(definition.name());
                 if (Files.notExists(path)) {
                     LocalJsonFileWriter.write(path, definition.content());
-                } else {
-                    String current = Files.readString(path, StandardCharsets.UTF_8);
-                    if (legacyDefaults.getOrDefault(definition.name(), List.of()).contains(current)) {
-                        LocalJsonFileWriter.write(path, definition.content());
-                    }
                 }
             }
         } catch (IOException exception) {
@@ -102,7 +104,8 @@ public class EditableTemplateRepository {
 
     private TemplateView view(Definition definition, String content) {
         return new TemplateView(definition.name(), definition.label(), definition.section(), definition.condition(),
-                content, definition.content(), List.copyOf(placeholders(definition.content())), content.equals(definition.content()));
+                content, definition.content(), List.copyOf(placeholders(definition.content())),
+                content.equals(definition.content()), version);
     }
 
     public static Set<String> placeholders(String content) {
@@ -124,7 +127,18 @@ public class EditableTemplateRepository {
         return result.toString();
     }
 
+    private void validateDefinitions() {
+        if (definitions.isEmpty()) throw new IllegalArgumentException("El catálogo no contiene plantillas.");
+        definitions.values().forEach(definition -> {
+            if (definition.name() == null || definition.name().isBlank()
+                    || definition.content() == null || definition.content().isBlank()) {
+                throw new IllegalArgumentException("Definición de plantilla inválida.");
+            }
+        });
+    }
+
     public record Definition(String name, String label, String section, String condition, String content) {}
     public record TemplateView(String name, String label, String section, String condition, String content,
-                               String defaultContent, List<String> requiredVariables, boolean usingDefault) {}
+                               String defaultContent, List<String> requiredVariables, boolean usingDefault,
+                               int version) {}
 }

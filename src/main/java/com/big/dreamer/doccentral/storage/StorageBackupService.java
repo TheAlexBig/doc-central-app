@@ -21,7 +21,7 @@ public class StorageBackupService {
 
     private static final Set<String> DATA_FILES = Set.of(
             "agents.json", "people.json", "vehicles.json",
-            "vehicle-option-exclusions.json", "generated-documents.json");
+            "vehicle-option-exclusions.json", "generated-documents-v2.json");
     private static final long MAX_UNCOMPRESSED_BYTES = 500L * 1024 * 1024;
 
     private final ApplicationDirectories directories;
@@ -36,7 +36,7 @@ public class StorageBackupService {
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
              ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
             addText(zip, "manifest.json", objectMapper.writeValueAsString(Map.of(
-                    "format", "central-docs-backup", "formatVersion", 1)));
+                    "format", "central-docs-backup", "formatVersion", 2)));
             for (String fileName : DATA_FILES) {
                 addFile(zip, directories.dataDirectory().resolve(fileName), "data/" + fileName);
             }
@@ -89,6 +89,9 @@ public class StorageBackupService {
         if (!"central-docs-backup".equals(values.get("format"))) {
             throw new StorageBackupException("El formato del respaldo no es compatible.");
         }
+        if (!(values.get("formatVersion") instanceof Number version) || version.intValue() != 2) {
+            throw new StorageBackupException("La versión del respaldo no es compatible.");
+        }
     }
 
     private void restoreEntry(String name, byte[] contents) throws IOException {
@@ -100,14 +103,10 @@ public class StorageBackupService {
                     new String(contents, StandardCharsets.UTF_8));
         } else if (name.startsWith("templates/")) {
             String fileName = name.substring("templates/".length());
-            Path templateDirectory = directories.templatesDirectory();
-            // Backups created before document-specific folders store car-sale blocks directly.
-            if (fileName.matches("[a-z-]+/[a-z-]+\\.txt")) {
-                int separator = fileName.indexOf('/');
-                templateDirectory = directories.templatesDirectory(fileName.substring(0, separator));
-                fileName = fileName.substring(separator + 1);
-            }
-            if (!fileName.matches("[a-z-]+\\.txt")) return;
+            if (!fileName.matches("[a-z-]+/[a-z-]+\\.txt")) return;
+            int separator = fileName.indexOf('/');
+            Path templateDirectory = directories.templatesDirectory(fileName.substring(0, separator));
+            fileName = fileName.substring(separator + 1);
             LocalJsonFileWriter.write(templateDirectory.resolve(fileName),
                     new String(contents, StandardCharsets.UTF_8));
         } else if (name.startsWith("documents/")) {

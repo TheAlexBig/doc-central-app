@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "templates": [
+    {"name":"party.txt","label":"Datos del contrayente","section":"Compartido","condition":""},
+    {"name":"premarital.txt","label":"Acta prematrimonial","section":"Expediente prematrimonial","condition":""},
+    {"name":"marriage.txt","label":"Escritura matriz","section":"Celebración","condition":""},
+    {"name":"registration.txt","label":"Control registral","section":"Actuaciones posteriores","condition":"No forma parte de la escritura matriz."}
+  ]
+}

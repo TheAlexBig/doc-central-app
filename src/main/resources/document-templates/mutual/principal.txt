@@ -1,0 +1,1 @@
+I) MUTUO: :debtorSubject recibe a su entera satisfacción :fromCreditor la cantidad de :amount.

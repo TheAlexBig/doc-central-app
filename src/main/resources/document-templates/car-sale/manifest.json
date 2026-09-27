@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "templates": [
+    {"name":"people-document.txt","label":"Comparecientes del contrato","section":"Contrato","condition":""},
+    {"name":"car-document.txt","label":"Vehículo del contrato","section":"Contrato","condition":""},
+    {"name":"document.txt","label":"Condiciones del contrato","section":"Contrato","condition":""},
+    {"name":"first-section-end.txt","label":"Cierre del contrato","section":"Contrato","condition":""},
+    {"name":"legal-authentic.txt","label":"Apertura notarial","section":"Auténtica","condition":""},
+    {"name":"people-authentic.txt","label":"Comparecientes de la auténtica","section":"Auténtica","condition":""},
+    {"name":"car-authentic.txt","label":"Vehículo de la auténtica","section":"Auténtica","condition":""},
+    {"name":"document-authentic.txt","label":"Condiciones de la auténtica","section":"Auténtica","condition":"Incluye la obligación de presentar el documento ante SERTRACEN."},
+    {"name":"second-section-end.txt","label":"Cierre de la auténtica","section":"Auténtica","condition":""}
+  ]
+}

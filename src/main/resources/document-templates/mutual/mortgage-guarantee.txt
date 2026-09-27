@@ -1,0 +1,1 @@
+:number GARANTÍA HIPOTECARIA: Se constituye hipoteca sobre el inmueble siguiente: :guaranteeDetails.

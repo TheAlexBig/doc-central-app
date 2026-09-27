@@ -1,0 +1,1 @@
+:number ORIGEN Y DESTINO DE LOS FONDOS: El crédito se otorga con fondos propios obtenidos lícitamente. :debtorSubject destinará los fondos a :fundsPurpose y pagará la obligación con fondos procedentes de actividades lícitas.

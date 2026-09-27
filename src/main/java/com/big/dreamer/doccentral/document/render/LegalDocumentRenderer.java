@@ -1,6 +1,8 @@
 package com.big.dreamer.doccentral.document.render;
 
-import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
+import com.big.dreamer.doccentral.document.DocumentGenerationException;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Section;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Signature;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -25,7 +27,8 @@ public class LegalDocumentRenderer {
     private static final float LINE_HEIGHT = 15;
     private static final float MARGIN = 54;
 
-    public byte[] word(List<Section> sections) {
+    public byte[] word(LegalDocument documentModel) {
+        List<Section> sections = documentModel.sections();
         try (XWPFDocument document = new XWPFDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             for (int index = 0; index < sections.size(); index++) {
@@ -42,7 +45,8 @@ public class LegalDocumentRenderer {
         }
     }
 
-    public byte[] pdf(List<Section> sections) {
+    public byte[] pdf(LegalDocument documentModel) {
+        List<Section> sections = documentModel.sections();
         try (PDDocument document = new PDDocument();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(document);
@@ -76,15 +80,6 @@ public class LegalDocumentRenderer {
                 run.setText(signature.title());
             }
         }
-    }
-
-    public record Section(String text, List<Signature> signatures) {
-        public Section {
-            signatures = signatures == null ? List.of() : List.copyOf(signatures);
-        }
-    }
-
-    public record Signature(String name, String title) {
     }
 
     private static final class PdfWriter {

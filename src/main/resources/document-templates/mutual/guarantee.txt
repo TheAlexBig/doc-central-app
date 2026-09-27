@@ -1,0 +1,1 @@
+:number GARANTÍA: :debtorSubject suscribe una letra de cambio sin protesto por :amount, :forCreditor, con vencimiento el :guaranteeDueDate. La letra garantiza esta obligación y no constituye una doble obligación.

@@ -6,6 +6,7 @@ import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
+import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ class CarSaleDocumentServiceTests {
         directories.initialize();
         CarSaleTemplateRepository templateRepository = new CarSaleTemplateRepository(directories);
         templateRepository.initializeTemplates();
-        service = new CarSaleDocumentService(templateRepository);
+        service = new CarSaleDocumentService(templateRepository, new LegalDocumentRenderer());
     }
 
     @Test

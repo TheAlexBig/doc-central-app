@@ -6,6 +6,8 @@ import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
+import com.big.dreamer.doccentral.document.render.LegalDocument;
+import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +25,12 @@ public class CarSaleDocumentService {
                     "Departamento", "FECHA", "HORA", "No", "No"),
             new LegalAgentDetails("Inicial", "Notario", "Departamento", "Municipio", "Masculino", "Notario"));
 
-    private final CarSaleTemplateRepository templateRepository;
-    private final CarSaleDocumentAssembler assembler = new CarSaleDocumentAssembler();
-    private final CarSaleWordDocumentRenderer wordRenderer = new CarSaleWordDocumentRenderer();
-    private final CarSalePdfDocumentRenderer pdfRenderer = new CarSalePdfDocumentRenderer();
+    private final CarSaleDocumentAssembler assembler;
+    private final LegalDocumentRenderer renderer;
 
-    public CarSaleDocumentService(CarSaleTemplateRepository templateRepository) {
-        this.templateRepository = templateRepository;
+    public CarSaleDocumentService(CarSaleTemplateRepository templateRepository, LegalDocumentRenderer renderer) {
+        this.assembler = new CarSaleDocumentAssembler(templateRepository);
+        this.renderer = renderer;
     }
 
     @PostConstruct
@@ -38,14 +39,14 @@ public class CarSaleDocumentService {
     }
 
     public byte[] createDocument(CarSaleDocumentRequest request) {
-        return wordRenderer.render(createSections(request));
+        return renderer.word(assemble(request));
     }
 
     public byte[] createPdfDocument(CarSaleDocumentRequest request) {
-        return pdfRenderer.render(createSections(request));
+        return renderer.pdf(assemble(request));
     }
 
-    private CarSaleDocumentSections createSections(CarSaleDocumentRequest request) {
-        return assembler.createSections(request, templateRepository.load());
+    LegalDocument assemble(CarSaleDocumentRequest request) {
+        return assembler.assemble(request);
     }
 }

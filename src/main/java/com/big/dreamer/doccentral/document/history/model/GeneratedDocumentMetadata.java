@@ -8,6 +8,7 @@ import java.util.Map;
 
 public record GeneratedDocumentMetadata(
         String id,
+        int schemaVersion,
         String type,
         String fileName,
         String createdAt,

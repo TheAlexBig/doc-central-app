@@ -32,13 +32,13 @@ class MarriageDocumentServiceTests {
                         new RecognizedChild("HIJO UNO", "PARTIDA UNO"),
                         new RecognizedChild("HIJO DOS", "PARTIDA DOS")));
 
-        assertThat(service.assemble(request)).extracting(section -> section.text())
+        assertThat(service.assemble(request).sections()).extracting(section -> section.text())
                 .anySatisfy(text -> assertThat(text).contains(
                         "ACTA PREMATRIMONIAL", "COMUNIDAD DIFERIDA", "HIJO UNO", "HIJO DOS"))
                 .anySatisfy(text -> assertThat(text).contains(
                         "NÚMERO DOCE", "SÍ, QUIERO", "TESTIGO UNO", "HIJO UNO", "HIJO DOS"))
                 .anySatisfy(text -> assertThat(text).contains("HOJA DE CONTROL", "quince días hábiles"));
-        assertThat(service.assemble(request).getFirst().signatures())
+        assertThat(service.assemble(request).sections().getFirst().signatures())
                 .extracting(signature -> signature.title())
                 .contains("NOTARIO AUTORIZANTE");
         assertThat(service.createDocument(request)).isNotEmpty();

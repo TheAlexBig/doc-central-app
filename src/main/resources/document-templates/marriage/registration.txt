@@ -1,0 +1,1 @@
+HOJA DE CONTROL PARA INSCRIPCIÓN. Matrimonio de :partyOneName y :partyTwoName, celebrado el :celebrationDate en :celebrationPlace, departamento de :celebrationState, bajo el régimen de :propertyRegimeName. Notario autorizante: :notary. :capitulationsRegistration :childrenRegistration ACTUACIONES: :postActions

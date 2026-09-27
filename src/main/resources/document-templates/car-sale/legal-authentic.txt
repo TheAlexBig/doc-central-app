@@ -1,0 +1,1 @@
+En el distrito de :signingSettlement, Departamento de :signingState, a las :signHour del día :signDate.- Ante mí, :notaryName, :notaryTitle, del domicilio de :notarySettlement, del departamento de :notaryState,

@@ -42,7 +42,7 @@ public class ApplicationDirectories {
     }
 
     public Path templatesRootDirectory() {
-        return dataDirectory.resolve("templates");
+        return dataDirectory.resolve("templates-v2");
     }
 
     public Path dataDirectory() {
@@ -80,7 +80,7 @@ public class ApplicationDirectories {
     }
 
     public Path generatedDocumentsHistoryFile() {
-        return dataDirectory.resolve("generated-documents.json");
+        return dataDirectory.resolve("generated-documents-v2.json");
     }
 
     private Path resolve(String configuredDirectory, Path defaultDirectory) {

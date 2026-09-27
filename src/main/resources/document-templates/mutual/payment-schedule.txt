@@ -1,0 +1,1 @@
+:number PLAN DE PAGOS: Capital :capital; intereses :interest; total a pagar :total. Los pagos se realizarán :periodicity. :schedule.

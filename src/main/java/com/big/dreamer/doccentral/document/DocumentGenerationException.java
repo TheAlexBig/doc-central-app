@@ -1,4 +1,4 @@
-package com.big.dreamer.doccentral.document.carsale.service;
+package com.big.dreamer.doccentral.document;
 
 public class DocumentGenerationException extends RuntimeException {
 

@@ -19,6 +19,7 @@ import com.big.dreamer.doccentral.document.mutual.model.MutualTermUnit;
 import com.big.dreamer.doccentral.document.mutual.model.MutualVehiclePledge;
 import com.big.dreamer.doccentral.storage.ApplicationDirectories;
 import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateRepository;
+import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -41,7 +42,7 @@ class MutualDocumentServiceTests {
         repository = new MutualTemplateRepository(directories);
         repository.initializeTemplates();
         service = new MutualDocumentService(repository,
-                new MutualRulesService(new MutualFinancialCalculator()));
+                new MutualRulesService(new MutualFinancialCalculator()), new LegalDocumentRenderer());
     }
 
     @Test

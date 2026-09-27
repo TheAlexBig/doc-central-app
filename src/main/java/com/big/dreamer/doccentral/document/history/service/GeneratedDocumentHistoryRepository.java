@@ -67,6 +67,7 @@ public class GeneratedDocumentHistoryRepository {
             Map<String, Object> draft) {
         GeneratedDocumentMetadata metadata = new GeneratedDocumentMetadata(
                 UUID.randomUUID().toString(),
+                2,
                 CAR_SALE_TYPE,
                 fileName,
                 createdAt,
@@ -96,6 +97,7 @@ public class GeneratedDocumentHistoryRepository {
         String creditor = fullName(document.creditor().givenName(), document.creditor().lastName());
         GeneratedDocumentMetadata metadata = new GeneratedDocumentMetadata(
                 UUID.randomUUID().toString(),
+                2,
                 MUTUAL_TYPE,
                 fileName,
                 createdAt,
@@ -121,7 +123,7 @@ public class GeneratedDocumentHistoryRepository {
         String partyOne = fullName(document.partyOne().person().givenName(), document.partyOne().person().lastName());
         String partyTwo = fullName(document.partyTwo().person().givenName(), document.partyTwo().person().lastName());
         GeneratedDocumentMetadata metadata = new GeneratedDocumentMetadata(
-                UUID.randomUUID().toString(), MARRIAGE_TYPE, fileName, createdAt,
+                UUID.randomUUID().toString(), 2, MARRIAGE_TYPE, fileName, createdAt,
                 "Matrimonio - " + partyOne + " / " + partyTwo,
                 partyOne, partyTwo, "", null,
                 draft == null ? Map.of() : draft, null, document);

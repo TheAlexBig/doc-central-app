@@ -1,0 +1,1 @@
+II) PLAZO Y FORMA DE PAGO: La suma mutuada será cancelada en un plazo de :term, con vencimiento el :dueDate, mediante :installments de :installmentAmount. El pago se depositará en la cuenta :paymentAccount del :paymentBank, a nombre de :creditorName.

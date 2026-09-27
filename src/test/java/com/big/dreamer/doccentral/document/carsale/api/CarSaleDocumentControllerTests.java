@@ -1,12 +1,14 @@
 package com.big.dreamer.doccentral.document.carsale.api;
 
 import com.big.dreamer.doccentral.document.carsale.model.CarDetails;
+import com.big.dreamer.doccentral.document.DocumentGenerationCoordinator;
 import com.big.dreamer.doccentral.document.carsale.model.CarSaleDocumentRequest;
 import com.big.dreamer.doccentral.document.carsale.model.DocumentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.LegalAgentDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
 import com.big.dreamer.doccentral.document.carsale.service.CarSaleDocumentService;
 import com.big.dreamer.doccentral.document.carsale.template.CarSaleTemplateRepository;
+import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
 import com.big.dreamer.doccentral.document.history.api.DocumentHistoryController;
 import com.big.dreamer.doccentral.document.history.model.CarSaleGenerationRequest;
 import com.big.dreamer.doccentral.document.history.service.GeneratedDocumentHistoryRepository;
@@ -45,12 +47,14 @@ class CarSaleDocumentControllerTests {
         directories.initialize();
         CarSaleTemplateRepository templateRepository = new CarSaleTemplateRepository(directories);
         templateRepository.initializeTemplates();
-        CarSaleDocumentService documentService = new CarSaleDocumentService(templateRepository);
+        CarSaleDocumentService documentService = new CarSaleDocumentService(
+                templateRepository, new LegalDocumentRenderer());
         GeneratedDocumentStorage documentStorage = new GeneratedDocumentStorage(directories);
         historyRepository = new GeneratedDocumentHistoryRepository(directories, new ObjectMapper());
         historyRepository.initialize();
         documentController = new CarSaleDocumentController(
-                documentService, documentStorage, historyRepository, mock(LicenseService.class));
+                documentService, new DocumentGenerationCoordinator(documentStorage),
+                historyRepository, mock(LicenseService.class));
         historyController = new DocumentHistoryController(
                 historyRepository, documentStorage, documentService, mock(MutualDocumentService.class),
                 mock(com.big.dreamer.doccentral.document.marriage.service.MarriageDocumentService.class));

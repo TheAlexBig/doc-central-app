@@ -10,8 +10,9 @@ import com.big.dreamer.doccentral.document.marriage.model.MarriageWitness;
 import com.big.dreamer.doccentral.document.marriage.model.RecognizedChild;
 import com.big.dreamer.doccentral.document.marriage.template.MarriageTemplateRepository;
 import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
-import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer.Section;
-import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer.Signature;
+import com.big.dreamer.doccentral.document.render.LegalDocument;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Section;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Signature;
 import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
 import com.big.dreamer.doccentral.document.text.LegalDocumentText;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class MarriageDocumentService {
         return renderer.pdf(assemble(request));
     }
 
-    List<Section> assemble(MarriageDocumentRequest request) {
+    LegalDocument assemble(MarriageDocumentRequest request) {
         MarriageRuleResolution resolution = rules.validateForGeneration(request);
         Map<String, String> blocks = templates.findAll();
         Map<String, String> values = new LinkedHashMap<>(values(request, resolution));
@@ -66,10 +67,10 @@ public class MarriageDocumentService {
         request.witnesses().forEach(witness -> ceremonySignatures.add(
                 new Signature(fullName(witness.person()), "TESTIGO")));
         ceremonySignatures.add(notary);
-        return List.of(
+        return new LegalDocument(List.of(
                 new Section(render(blocks, "premarital.txt", values), premaritalSignatures),
                 new Section(render(blocks, "marriage.txt", values), ceremonySignatures),
-                new Section(render(blocks, "registration.txt", values), List.of()));
+                new Section(render(blocks, "registration.txt", values), List.of())));
     }
 
     private Map<String, String> values(MarriageDocumentRequest request, MarriageRuleResolution resolution) {

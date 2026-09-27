@@ -2,30 +2,20 @@ package com.big.dreamer.doccentral.document.mutual.service;
 
 import com.big.dreamer.doccentral.document.carsale.model.CarDetails;
 import com.big.dreamer.doccentral.document.carsale.model.PersonDetails;
-import com.big.dreamer.doccentral.document.carsale.service.DocumentGenerationException;
 import com.big.dreamer.doccentral.document.mutual.model.MutualDocumentRequest;
 import com.big.dreamer.doccentral.document.mutual.model.MutualTerms;
 import com.big.dreamer.doccentral.document.mutual.template.MutualTemplateRepository;
 import com.big.dreamer.doccentral.document.template.EditableTemplateRepository;
+import com.big.dreamer.doccentral.document.render.LegalDocument;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Section;
+import com.big.dreamer.doccentral.document.render.LegalDocument.Signature;
+import com.big.dreamer.doccentral.document.render.LegalDocumentRenderer;
 import com.big.dreamer.doccentral.document.text.LegalDocumentText;
 import com.big.dreamer.doccentral.document.text.NotarialIdentificationText;
 import java.util.Map;
 import java.math.BigDecimal;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
-import org.apache.poi.xwpf.usermodel.BreakType;
-import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,15 +23,15 @@ import java.util.Locale;
 @Service
 public class MutualDocumentService {
 
-    private static final float FONT_SIZE = 11;
-    private static final float LINE_HEIGHT = 15;
-    private static final float MARGIN = 54;
     private final MutualTemplateRepository repository;
     private final MutualRulesService rules;
+    private final LegalDocumentRenderer renderer;
 
-    public MutualDocumentService(MutualTemplateRepository repository, MutualRulesService rules) {
+    public MutualDocumentService(MutualTemplateRepository repository, MutualRulesService rules,
+                                 LegalDocumentRenderer renderer) {
         this.repository = repository;
         this.rules = rules;
+        this.renderer = renderer;
     }
 
     private String render(Map<String, String> templates, String name, Map<String, String> values) {
@@ -49,41 +39,24 @@ public class MutualDocumentService {
     }
 
     public byte[] createDocument(MutualDocumentRequest request) {
-        MutualDocumentContent content = assemble(request);
-        try (XWPFDocument document = new XWPFDocument();
-             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            addParagraph(document, content.contract());
-            addSignatures(document, content);
-            if (!blank(content.authentic())) {
-                document.createParagraph().createRun().addBreak(BreakType.PAGE);
-                addParagraph(document, content.authentic());
-                addSignatures(document, content);
-            }
-            document.write(output);
-            return output.toByteArray();
-        } catch (IOException exception) {
-            throw new DocumentGenerationException("Unable to generate the mutual agreement.", exception);
-        }
+        return renderer.word(document(assemble(request)));
     }
 
     public byte[] createPdfDocument(MutualDocumentRequest request) {
-        MutualDocumentContent content = assemble(request);
-        try (PDDocument document = new PDDocument();
-             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            PdfWriter writer = new PdfWriter(document);
-            writer.paragraph(content.contract());
-            writer.signatures(content);
-            if (!blank(content.authentic())) {
-                writer.newPage();
-                writer.paragraph(content.authentic());
-                writer.signatures(content);
-            }
-            writer.close();
-            document.save(output);
-            return output.toByteArray();
-        } catch (IOException exception) {
-            throw new DocumentGenerationException("Unable to generate the mutual agreement PDF.", exception);
+        return renderer.pdf(document(assemble(request)));
+    }
+
+    private LegalDocument document(MutualDocumentContent content) {
+        List<Signature> signatures = new ArrayList<>();
+        signatures.add(new Signature(content.debtorName(), content.debtorTitle()));
+        signatures.add(new Signature(content.creditorName(), content.creditorTitle()));
+        if (!blank(content.guarantorName())) {
+            signatures.add(new Signature(content.guarantorName(), content.guarantorTitle()));
         }
+        List<Section> sections = new ArrayList<>();
+        sections.add(new Section(content.contract(), signatures));
+        if (!blank(content.authentic())) sections.add(new Section(content.authentic(), signatures));
+        return new LegalDocument(sections);
     }
 
     MutualDocumentContent assemble(MutualDocumentRequest request) {
@@ -341,47 +314,4 @@ public class MutualDocumentService {
     private String fullName(PersonDetails person) { return fullName(person.givenName(), person.lastName()); }
     private String fullName(String first, String last) { return (first + " " + last).trim().replaceAll("\\s+", " ").toUpperCase(Locale.forLanguageTag("es-SV")); }
 
-    private void addParagraph(XWPFDocument document, String text) {
-        XWPFParagraph paragraph = document.createParagraph();
-        paragraph.setAlignment(ParagraphAlignment.BOTH);
-        paragraph.createRun().setText(text);
-    }
-
-    private void addSignatures(XWPFDocument document, MutualDocumentContent content) {
-        int columns = blank(content.guarantorName()) ? 2 : 3;
-        XWPFTable table = document.createTable(1, columns);
-        table.removeBorders();
-        table.setWidth("100%");
-        signature(table.getRow(0).getCell(0).getParagraphs().getFirst(), content.debtorName(), content.debtorTitle());
-        signature(table.getRow(0).getCell(1).getParagraphs().getFirst(), content.creditorName(), content.creditorTitle());
-        if (columns == 3) {
-            signature(table.getRow(0).getCell(2).getParagraphs().getFirst(),
-                    content.guarantorName(), content.guarantorTitle());
-        }
-    }
-
-    private void signature(XWPFParagraph paragraph, String name, String title) {
-        paragraph.setAlignment(ParagraphAlignment.CENTER);
-        var run = paragraph.createRun();
-        for (int index = 0; index < 4; index++) run.addBreak();
-        run.setText(name); run.addBreak(); run.setText(title);
-    }
-
-    private static final class PdfWriter {
-        private final PDDocument document;
-        private final PDType1Font font = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
-        private final PDType1Font bold = new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
-        private PDPageContentStream content;
-        private float y;
-
-        private PdfWriter(PDDocument document) throws IOException { this.document = document; newPage(); }
-        private void newPage() throws IOException { if (content != null) content.close(); PDPage page = new PDPage(PDRectangle.LETTER); document.addPage(page); content = new PDPageContentStream(document, page); y = page.getMediaBox().getHeight() - MARGIN; }
-        private void paragraph(String text) throws IOException { float width = PDRectangle.LETTER.getWidth() - MARGIN * 2; List<String> lines = wrap(text, width); for (int i = 0; i < lines.size(); i++) { space(LINE_HEIGHT); line(lines.get(i), width, i == lines.size() - 1); y -= LINE_HEIGHT; } y -= LINE_HEIGHT; }
-        private void line(String text, float width, boolean last) throws IOException { int spaces = Math.max(0, text.split(" ").length - 1); float textWidth = font.getStringWidth(text) / 1000 * FONT_SIZE; content.beginText(); content.setFont(font, FONT_SIZE); content.setWordSpacing(!last && spaces > 0 ? (width - textWidth) / spaces : 0); content.newLineAtOffset(MARGIN, y); content.showText(text); content.endText(); }
-        private void signatures(MutualDocumentContent data) throws IOException { space(LINE_HEIGHT * 7); y -= LINE_HEIGHT * 3; int count = data.guarantorName().isBlank() ? 2 : 3; float width = (PDRectangle.LETTER.getWidth() - MARGIN * 2) / count; centered(data.debtorName(), MARGIN, width, bold); centered(data.creditorName(), MARGIN + width, width, bold); if (count == 3) centered(data.guarantorName(), MARGIN + width * 2, width, bold); y -= LINE_HEIGHT; centered(data.debtorTitle(), MARGIN, width, font); centered(data.creditorTitle(), MARGIN + width, width, font); if (count == 3) centered(data.guarantorTitle(), MARGIN + width * 2, width, font); }
-        private void centered(String text, float x, float width, PDType1Font selected) throws IOException { float textWidth = selected.getStringWidth(text) / 1000 * FONT_SIZE; content.beginText(); content.setFont(selected, FONT_SIZE); content.newLineAtOffset(x + (width - textWidth) / 2, y); content.showText(text); content.endText(); }
-        private void space(float needed) throws IOException { if (y - needed < MARGIN) newPage(); }
-        private List<String> wrap(String text, float width) throws IOException { List<String> lines = new ArrayList<>(); StringBuilder line = new StringBuilder(); for (String word : text.split("\\s+")) { String next = line.isEmpty() ? word : line + " " + word; if (font.getStringWidth(next) / 1000 * FONT_SIZE <= width) { line.setLength(0); line.append(next); } else { if (!line.isEmpty()) lines.add(line.toString()); line.setLength(0); line.append(word); } } if (!line.isEmpty()) lines.add(line.toString()); return lines; }
-        private void close() throws IOException { if (content != null) content.close(); }
-    }
 }

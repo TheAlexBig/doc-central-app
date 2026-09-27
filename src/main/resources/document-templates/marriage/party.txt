@@ -1,0 +1,1 @@
+:name, de :age años de edad, :job, :nationality, :familyStatus, originario de :birthPlace y del domicilio de :settlement, departamento de :state, a quien identifico por medio de :identityType número :document, hijo de :parents:languageAssistance
